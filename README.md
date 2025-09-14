@@ -1,1 +1,0 @@
-"# Motera AI Mock Interview" 
