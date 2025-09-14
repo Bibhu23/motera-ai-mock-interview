@@ -4,3 +4,4 @@ const userRouter=expres.Router();
 
 userRouter.post("/register",registerUser);
 export default userRouter;
+
