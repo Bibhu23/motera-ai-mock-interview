@@ -39,6 +39,7 @@ const registerUser = async (req, res) => {
    }
 
 }
+<<<<<<< HEAD
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -71,3 +72,6 @@ const loginUser = async (req, res) => {
   }
 };
 export { registerUser,loginUser};
+=======
+export { registerUser };
+>>>>>>> main

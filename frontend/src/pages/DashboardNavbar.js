@@ -6,7 +6,7 @@ function DashboardNavbar({ user }) {
             <h3>Dashboard</h3>
             <div className="user-info">
                 <span>{user.name}</span>
-                <img src={user.avatar || "https://via.placeholder.com/40"} alt="avatar" />
+                <img style={{ width: "10px" }} src={user.avatar || "https://img.icons8.com/?size=100&id=nSR7D8Yb2tjC&format=png&color=000000"} alt="avatar" />
             </div>
         </div>
     );
