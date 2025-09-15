@@ -1,7 +1,12 @@
-import expres from 'express';
-import { registerUser } from '../controller/Usercontroller.js';
-const userRouter=expres.Router();
+import express from 'express';
+import { registerUser,loginUser } from '../controller/Usercontroller.js';
+import { upload } from '../middleware/upload.js';
+const userRouter = express.Router();
 
-userRouter.post("/register",registerUser);
+userRouter.post("/register",upload.single("resume"),registerUser);
+userRouter.post("/login",loginUser);
+
+
+
+
 export default userRouter;
-
