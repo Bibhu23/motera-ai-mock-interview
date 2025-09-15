@@ -36,7 +36,7 @@ function Signup() {
             }
             console.log("signup payload", payload);
 
-            // await Gpi.post("/auth/register", payload)
+            await Gpi.post("/register", payload)
             // navigate("/login")
         } catch (err) {
             Seterror(err.response?.data?.message || "signup failed")
