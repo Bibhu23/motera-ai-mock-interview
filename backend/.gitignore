@@ -1,9 +1,14 @@
+<<<<<<< HEAD
+# Node modules
+node_modules/
+=======
 # Dependencies
 /node_modules
 
 # Environment variables
 .env
 .env.*.local
+>>>>>>> main
 
 # Logs
 logs
@@ -13,12 +18,30 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+<<<<<<< HEAD
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output (if using Babel/TypeScript)
+dist/
+build/
+
+# Coverage (from tests)
+coverage/
+
+=======
+>>>>>>> main
 # Runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
 
+<<<<<<< HEAD
+# Editor / IDE settings
+=======
 # Coverage & build outputs
 /coverage
 /build
@@ -32,10 +55,15 @@ pids
 out
 
 # IDE / Editor settings
+>>>>>>> main
 .vscode/
 .idea/
 *.swp
 *.swo
+<<<<<<< HEAD
+*.swn
+=======
+>>>>>>> main
 *.bak
 
 # OS-specific files
@@ -43,5 +71,14 @@ out
 Thumbs.db
 
 # Temporary files
+<<<<<<< HEAD
+*.tgz
+*.zip
+*.tar.gz
+
+# Uploads (if your backend handles file uploads)
+
+=======
 *.tmp
 *.temp
+>>>>>>> main
