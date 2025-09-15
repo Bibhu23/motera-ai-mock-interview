@@ -1,12 +1,16 @@
+import express from "express";
+import cors from "cors";
+import 'dotenv/config';
+import connectDB from "./config/mongodb.js";
+import userRouter from "./route/User.route.js"
+const port = process.env.PORT || 4000;
+const app = express();
+app.use(cors());
+app.use(express.json());
+await connectDB();
+app.use("/api", userRouter);
+app.listen(port, () => {
+    console.log(`server Running at the localhost:${port}`);
 
-const express = require('express')
-const app = express()
-const PORT = 5000
-
-app.get("/ping", (req, res) => {
-    res.send("pong")
 })
-app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`);
 
-})
