@@ -2,7 +2,7 @@ import axios from "axios";
 
 //baseurl for backend
 const Gpi = axios.create({
-    baseURL: "http:localhost:5000/api"
+    baseURL: "http://localhost:7656/api", // backend base URL
 })
 
 Gpi.interceptors.request.use((req) => {
