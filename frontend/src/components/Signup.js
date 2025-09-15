@@ -22,25 +22,38 @@ function Signup() {
     const handlechnage = (event) => {
         Setform({ ...form, [event.target.name]: event.target.value })
     }
-    const handlesubmit = async (e) => {
-        e.preventDefault()
-        if (form.password != form.confirmPassword) {
-            Seterror("Passwords do not match")
-            return
-        }
-        try {
-            // Convert skills string into array before sending
-            const payload = {
-                ...form,
-                skills: form.skills.split(',').map((s) => s.trim()),
-            }
-            console.log("signup payload", payload);
+  const handlesubmit = async (e) => {
+  e.preventDefault();
 
-            // await Gpi.post("/auth/register", payload)
-            // navigate("/login")
-        } catch (err) {
-            Seterror(err.response?.data?.message || "signup failed")
-        }
+  if (form.password !== form.confirmPassword) {
+    Seterror("Passwords do not match");
+    return;
+  }
+
+  try {
+    const payload = {
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: form.role,
+      experienceYears: Number(form.experienceYears),
+      skills: form.skills.split(",").map((s) => s.trim()),
+      phone: form.phone,
+      linkedInUrl: form.linkedInUrl
+    };
+
+    console.log("signup payload", payload);
+
+    const response = await Gpi.post("/user/api/v1/register", payload);
+
+    console.log("Response:", response.data);
+   
+
+  } catch (err) {
+    Seterror(err.response?.data?.message || "Signup failed");
+  }
+
+
     }
     return (
         <div className="container mt-5">
