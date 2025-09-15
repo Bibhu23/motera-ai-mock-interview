@@ -7,8 +7,14 @@ const Gpi = axios.create({
     withCredentials: true,            
 });
 =======
+<<<<<<< HEAD
+    baseURL: "http://localhost:7656", 
+    withCredentials: true,            
+});
+=======
     baseURL: "http://localhost:7656/api", // backend base URL
 })
+>>>>>>> main
 >>>>>>> main
 
 Gpi.interceptors.request.use((req) => {
