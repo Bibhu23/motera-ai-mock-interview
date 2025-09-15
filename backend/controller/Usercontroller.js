@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 const registerUser = async (req, res) => {
    try {
       const { name, email, password, role, experienceYears, skills, phone, linkedInUrl } = req.body;
+<<<<<<< HEAD
         console.log("Uploaded file:", req.file);
+=======
+>>>>>>> main
 
       const user = await User.findOne({ email });
       if (user) {
@@ -13,7 +16,10 @@ const registerUser = async (req, res) => {
 
       }
       const passwordHash = await bcrypt.hash(password, 10);
+<<<<<<< HEAD
       const resumePath = req.file ? req.file.path : null;
+=======
+>>>>>>> main
       const newUser = new User({
          name: name,
          email: email,
@@ -22,8 +28,12 @@ const registerUser = async (req, res) => {
          experienceYears: experienceYears,
          skills: skills,
          phone: phone,
+<<<<<<< HEAD
          linkedInUrl: linkedInUrl,
          resumeUrl: resumePath
+=======
+         linkedInUrl: linkedInUrl
+>>>>>>> main
       })
       await newUser.save();
 
@@ -42,6 +52,10 @@ const registerUser = async (req, res) => {
    }
 
 }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -74,3 +88,9 @@ const loginUser = async (req, res) => {
   }
 };
 export { registerUser,loginUser};
+<<<<<<< HEAD
+=======
+=======
+export { registerUser };
+>>>>>>> main
+>>>>>>> main

@@ -23,6 +23,7 @@ function Signup() {
         Setform({ ...form, [event.target.name]: event.target.value })
    
     }
+<<<<<<< HEAD
      const handleResume = (e) => {
   Setform({ ...form, resume: e.target.files[0] });
 };
@@ -63,6 +64,48 @@ function Signup() {
   
 
 
+=======
+  const handlesubmit = async (e) => {
+  e.preventDefault();
+
+  if (form.password !== form.confirmPassword) {
+    Seterror("Passwords do not match");
+    return;
+  }
+
+  try {
+    const payload = {
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: form.role,
+      experienceYears: Number(form.experienceYears),
+      skills: form.skills.split(",").map((s) => s.trim()),
+      phone: form.phone,
+      linkedInUrl: form.linkedInUrl
+    };
+
+    console.log("signup payload", payload);
+
+    const response = await Gpi.post("/user/api/v1/register", payload);
+
+    console.log("Response:", response.data);
+   
+
+  } catch (err) {
+    Seterror(err.response?.data?.message || "Signup failed");
+  }
+
+
+<<<<<<< HEAD
+=======
+            await Gpi.post("/register", payload)
+            // navigate("/login")
+        } catch (err) {
+            Seterror(err.response?.data?.message || "signup failed")
+        }
+>>>>>>> main
+>>>>>>> main
     }
     return (
         <div className="container mt-5">
