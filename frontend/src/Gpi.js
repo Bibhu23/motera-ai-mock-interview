@@ -2,8 +2,14 @@ import axios from "axios";
 
 //baseurl for backend
 const Gpi = axios.create({
-    baseURL: "http:localhost:5000/api"
+<<<<<<< HEAD
+    baseURL: "http://localhost:7656", 
+    withCredentials: true,            
+});
+=======
+    baseURL: "http://localhost:7656/api", // backend base URL
 })
+>>>>>>> main
 
 Gpi.interceptors.request.use((req) => {
     const token = localStorage.getItem("token")
