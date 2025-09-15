@@ -54,6 +54,14 @@ function Signup() {
   }
 
 
+<<<<<<< HEAD
+=======
+            await Gpi.post("/register", payload)
+            // navigate("/login")
+        } catch (err) {
+            Seterror(err.response?.data?.message || "signup failed")
+        }
+>>>>>>> main
     }
     return (
         <div className="container mt-5">
