@@ -45,4 +45,4 @@ Thumbs.db
 *.tar.gz
 
 # Uploads (if your backend handles file uploads)
-uploads/
+

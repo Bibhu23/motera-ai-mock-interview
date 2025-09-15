@@ -21,26 +21,48 @@ function Signup() {
 
     const handlechnage = (event) => {
         Setform({ ...form, [event.target.name]: event.target.value })
+   
     }
-    const handlesubmit = async (e) => {
-        e.preventDefault()
-        if (form.password != form.confirmPassword) {
-            Seterror("Passwords do not match")
-            return
-        }
-        try {
-            // Convert skills string into array before sending
-            const payload = {
-                ...form,
-                skills: form.skills.split(',').map((s) => s.trim()),
-            }
-            console.log("signup payload", payload);
+     const handleResume = (e) => {
+  Setform({ ...form, resume: e.target.files[0] });
+};
+  const handlesubmit = async (e) => {
+  e.preventDefault();
 
-            // await Gpi.post("/auth/register", payload)
-            // navigate("/login")
-        } catch (err) {
-            Seterror(err.response?.data?.message || "signup failed")
-        }
+  if (form.password !== form.confirmPassword) {
+    Seterror("Passwords do not match");
+    return;
+  }
+
+  try {
+    //fromdata is req for handling file upload
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("email", form.email);
+    formData.append("password", form.password);
+    formData.append("role", form.role);
+    formData.append("experienceYears", form.experienceYears);
+    formData.append("skills", form.skills);
+    formData.append("phone", form.phone);
+    formData.append("linkedInUrl", form.linkedInUrl);
+
+     if(form.resume){
+    formData.append("resume", form.resume);
+     }
+
+    const response = await Gpi.post("/user/api/v1/register", formData,{
+        headers:{"Content-Type":"multipart/form-data"}
+    });
+
+    console.log("Response:", response.data);
+   
+
+  } catch (err) {
+    Seterror(err.response?.data?.message || "Signup failed");
+  }
+  
+
+
     }
     return (
         <div className="container mt-5">
@@ -97,7 +119,7 @@ function Signup() {
                 </div>
                 <div className="mb-3">
                     <label>upload Resume</label>
-                    <input type="file" className="form-control" required />
+                    <input type="file"  name="resume"    className="form-control" onChange={handleResume} required />
                     <small className="text-muted">Resume upload coming soon...</small>
                 </div>
                 <button type="submit" className="btn btn-primary">Signup</button>
