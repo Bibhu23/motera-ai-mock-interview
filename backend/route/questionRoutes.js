@@ -3,19 +3,16 @@ import { generatefuntion } from "../service/openAiService.js";
 
 const questionRouter = express.Router();
 
-// GET /api/questions/generate?role=React Developer&difficulty=Easy
+// GET /api/questions/generate?role=React&difficulty=easy
 questionRouter.get("/generate", async (req, res) => {
     try {
-        const { role, difficulty = "Easy" } = req.query;
+        const { role, difficulty = "easy" } = req.query;
 
         if (!role) {
             return res.status(400).json({ message: "Missing required parameter: role" });
         }
 
-        // generatefuntion should return an array of questions
         const questions = await generatefuntion(role, difficulty);
-
-        // always return object with "questions" key
         res.json({ questions });
     } catch (err) {
         console.error(err);
