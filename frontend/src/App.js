@@ -6,18 +6,20 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar'
 import Footer from './components/footer';
+import RoleQuestions from './pages/RoleQuestions';
 
 function App() {
   return (
     <div className="App">
       <div>
-        <Navbar/>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
-        <Footer/>
+        <RoleQuestions />
+        <Footer />
       </div>
     </div>
   );

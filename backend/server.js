@@ -3,6 +3,8 @@ import cors from "cors";
 import 'dotenv/config';
 import connectDB from "./config/mongodb.js";
 import userRouter from "./route/User.route.js";
+import questionRouter from "./route/questionRoutes.js";
+
 const port = process.env.PORT || 4000;
 const app = express();
 //handling cors error
@@ -13,6 +15,7 @@ app.use(cors({
 app.use(express.json());
 await connectDB();
 app.use("/user/api/v1", userRouter);
+app.use("/api/questions", questionRouter);
 app.listen(port, () => {
     console.log(`server Running at the localhost:${port}`);
 
