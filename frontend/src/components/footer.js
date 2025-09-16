@@ -1,4 +1,5 @@
 import React from "react";
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import "./Footer.css";
 
 const Footer = () => {
@@ -9,7 +10,7 @@ const Footer = () => {
         <div className="footer-section about">
           <h5>Motera AI</h5>
           <p>
-            Motera AI is your go-to platform for AI-driven solutions, talent discovery, 
+            Motera AI is your go-to platform for AI-driven solutions, talent discovery,
             and skill development. Empowering developers, analysts, and businesses with cutting-edge technology.
           </p>
         </div>
@@ -22,6 +23,35 @@ const Footer = () => {
             <li><a href="/contact">Contact</a></li>
             <li><a href="/privacy">Privacy Policy</a></li>
             <li><a href="/terms">Terms & Conditions</a></li>
+          </ul>
+        </div>
+        <div className="footer-section follow">
+          <h5>Follow Us</h5>
+          <ul className="list-unstyled">
+            <li>
+              <a href="#" className="social-icon text-white">
+                <FaFacebook size={24} className="me-3" style={{ color: "#1877F2" }} />
+                Facebook
+              </a>
+            </li>
+            <li>
+              <a href="#" className="social-icon text-white">
+                <FaTwitter size={24} className="me-3" style={{ color: "#1DA1F2" }} />
+                Twitter
+              </a>
+            </li>
+            <li>
+              <a href="#" className="social-icon text-white">
+                <FaInstagram size={24} className="me-3" style={{ color: "#E1306C" }} />
+                Instagram
+              </a>
+            </li>
+            <li>
+              <a href="#" className="social-icon text-white">
+                <FaLinkedin size={24} className="me-3" style={{ color: "#0077B5" }} />
+                LinkedIn
+              </a>
+            </li>
           </ul>
         </div>
 
