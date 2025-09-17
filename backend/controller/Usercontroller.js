@@ -9,7 +9,7 @@ const registerUser = async (req, res) => {
     const user = await User.findOne({ email });
     if (user) {
       console.log("User already exists");
-      res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists" });
 
     }
     const passwordHash = await bcrypt.hash(password, 10);
@@ -73,4 +73,18 @@ const loginUser = async (req, res) => {
 
   }
 };
+export const userCredit = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.status(200).json({ success: true, creditBalance: user.creditBalance, user: { name: user.name } });
+
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: error.message });
+
+  }
+}
 export { registerUser, loginUser };

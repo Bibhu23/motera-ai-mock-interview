@@ -6,8 +6,9 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar'
 import Footer from './components/footer';
-import RoleQuestions from './pages/RoleQuestions';
-
+import Login from './components/Login';
+import Payment from './pages/BuyCredit';
+import BuyCredit from './pages/BuyCredit';
 function App() {
   return (
     <div className="App">
@@ -16,9 +17,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path='/login' element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/buy" element={<BuyCredit />} />
         </Routes>
-        <RoleQuestions />
+
         <Footer />
       </div>
     </div>

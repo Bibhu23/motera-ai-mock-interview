@@ -57,7 +57,7 @@ function Signup() {
             });
 
             console.log("Response:", response.data);
-            // navigate("/login"); // Uncomment when you add login page
+            navigate("/login"); // Uncomment when you add login page
         } catch (err) {
             Seterror(err.response?.data?.message || "Signup failed");
         }
