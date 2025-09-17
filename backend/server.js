@@ -3,7 +3,8 @@ import cors from "cors";
 import 'dotenv/config';
 import connectDB from "./config/mongodb.js";
 import userRouter from "./route/User.route.js";
-import questionRouter from "./route/questionRoutes.js";
+import paymentrouter from "./route/payment.js";
+import cookieParser from "cookie-parser";
 
 const port = process.env.PORT || 4000;
 const app = express();
@@ -13,11 +14,11 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
 await connectDB();
 app.use("/user/api/v1", userRouter);
-app.use("/api/questions", questionRouter);
+app.use("/api/payment", paymentrouter);
 app.listen(port, () => {
     console.log(`server Running at the localhost:${port}`);
 
 })
-

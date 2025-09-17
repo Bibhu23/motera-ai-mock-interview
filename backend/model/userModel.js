@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
     },
     phone: { type: String },
     linkedInUrl: { type: String },
-    resumeUrl: { type: String }
+    resumeUrl: { type: String },
+    creditBalance: { type: Number, default: 5 }
 })
 export default mongoose.model("User", userSchema);
