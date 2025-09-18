@@ -7,8 +7,8 @@ import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar'
 import Footer from './components/footer';
 import Login from './components/Login';
-import Payment from './pages/BuyCredit';
 import BuyCredit from './pages/BuyCredit';
+import ExamPage from './components/ExamPage';
 function App() {
   return (
     <div className="App">
@@ -21,7 +21,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/buy" element={<BuyCredit />} />
         </Routes>
-
+        <ExamPage />
         <Footer />
       </div>
     </div>
