@@ -9,6 +9,7 @@ import Footer from './components/footer';
 import Login from './components/Login';
 import BuyCredit from './pages/BuyCredit';
 import ExamPage from './components/ExamPage';
+import Features from './pages/Features';
 function App() {
   return (
     <div className="App">
@@ -16,6 +17,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path='/features' element={<Features />} />
           <Route path="/signup" element={<Signup />} />
           <Route path='/login' element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
