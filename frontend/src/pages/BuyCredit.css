@@ -1,0 +1,102 @@
+.buycredit-container {
+    min-height: 80vh;
+    text-align: center;
+    padding-top: 3.5rem;
+    margin-bottom: 2.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: #f3f4f6;
+    /* gray-100 */
+}
+
+.plans-btn {
+    border: 1px solid #6b7280;
+    /* gray-500 */
+    padding: 0.5rem 2.5rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.plans-btn:hover {
+    background-color: #d1d5db;
+    /* gray-300 */
+}
+
+.buycredit-title {
+    font-size: 1.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    margin-top: 2rem;
+    color: #3b82f6;
+    /* blue-500 */
+}
+
+.plans-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.plan-card {
+    background-color: #374151;
+    /* gray-700 */
+    color: #f8fafc;
+    /* slate-50 */
+    padding: 3rem 2rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s;
+}
+
+.plan-card:hover {
+    transform: scale(1.05);
+}
+
+.plan-name {
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.plan-price {
+    margin-bottom: 0.25rem;
+}
+
+.plan-credits {
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.plan-desc {
+    font-size: 0.875rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.buy-btn {
+    padding: 0.5rem 2.5rem;
+    border-radius: 9999px;
+    background-color: #3b82f6;
+    /* blue-500 */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.buy-btn:hover {
+    background-color: #1e40af;
+    /* blue-700 */
+}
+
+.buy-btn.loading {
+    background-color: #9ca3af;
+    /* gray-400 */
+    cursor: not-allowed;
+}
