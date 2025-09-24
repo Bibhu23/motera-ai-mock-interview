@@ -1,4 +1,5 @@
 import express from "express";
+
 import { getGeminiQuestions } from "../service/GeminiService.js";
 
 const router = express.Router();
@@ -10,7 +11,6 @@ router.get("/questions/:section", async (req, res) => {
         const questions = await getGeminiQuestions(section, limit);
         res.json(questions);
     } catch (err) {
-        console.error("Error in /questions route:", err.message);
         res.status(500).json({ error: err.message });
     }
 });

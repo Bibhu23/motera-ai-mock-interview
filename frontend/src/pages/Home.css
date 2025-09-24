@@ -1,0 +1,112 @@
+/* Top Section */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 100px;
+    gap: 40px;
+}
+
+.img-container {
+    width: 500px;
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.button {
+    padding: 6px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 120px;
+    margin: 0 auto;
+}
+
+/* Steps / Rounds Section */
+.step-container {
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.step-text {
+    font-size: 28px;
+    margin-bottom: 40px;
+    font-weight: bold;
+}
+
+.step-distance {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.step-style {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    width: 250px;
+    position: relative;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.step-style:hover {
+    transform: translateY(-5px);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    position: absolute;
+    top: -20px;
+    left: calc(50% - 20px);
+}
+
+.round-icon {
+    font-size: 40px;
+    margin: 20px 0 10px 0;
+}
+
+.step-title {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.step-desc {
+    font-size: 14px;
+    color: #555;
+}
+
+.video-container {
+    text-align: center;
+    margin: 50px 0;
+}
+
+.video-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+video {
+    display: block;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
