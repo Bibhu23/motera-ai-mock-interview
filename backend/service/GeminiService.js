@@ -38,12 +38,17 @@ export async function evaluateAnswer(prompt) {
 export async function getGeminiQuestions(section, limit = 5) {
     const prompt = `Generate ${limit} ${section} multiple-choice questions in JSON array format like:
 [
-  {"question":"...","options":["a","b","c","d"],"answer":"..."}
+  {
+    "question":"...",
+    "options":["a","b","c","d"],
+    "answer":"...",
+    "explanation":"..."  // include explanation
+  }
 ]`;
     const raw = await callGemini(prompt);
     const jsonMatch = raw?.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
         try { return JSON.parse(jsonMatch[0]); } catch { }
     }
-    return [{ question: raw, options: [], answer: null }];
+    return [{ question: raw, options: [], answer: null, explanation: "No explanation provided" }];
 }

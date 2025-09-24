@@ -8,14 +8,17 @@ import userRouter from "./route/User.route.js";
 import paymentrouter from "./route/payment.js";
 import cookieParser from "cookie-parser";
 import geminiRoutes from "./route/gemini.route.js"
-import { initInterviewSocket } from "./handler/interViewSocket.js";
+import initInterviewSocket from "./handler/interViewSocket.js";
 import { createServer } from "http";
+import resumeRouter from "./route/resume.route.js"
 
-const port = process.env.PORT || 4000;
+
+const port = process.env.PORT || 7656;
 const app = express();
 //handling cors error
 app.use(cors({
     origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
     credentials: true,
 }));
 app.use(express.json());
@@ -24,6 +27,8 @@ app.use(cookieParser());
 app.use("/user/api/v1", userRouter);
 app.use("/api/payment", paymentrouter);
 app.use("/api/gemini", geminiRoutes);
+app.use("/api", resumeRouter);
+
 
 const startServer = async () => {
     try {
@@ -36,7 +41,7 @@ const startServer = async () => {
                 methods: ["GET", "POST"],
                 credentials: true,
             },
-            transports: ["websocket", "polling"]
+            transports: ["websocket", "polling"],
         });
 
         // Setup socket handlers (see socket/interviewSocket.js)
@@ -51,4 +56,4 @@ const startServer = async () => {
     }
 };
 
-startServer(); 
+startServer();

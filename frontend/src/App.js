@@ -10,6 +10,8 @@ import Login from './components/Login';
 import BuyCredit from './pages/BuyCredit';
 import ExamPage from './components/ExamPage';
 import Features from './pages/Features';
+import Round1 from './pages/Round1';
+import Round2 from './pages/Round2';
 function App() {
   return (
     <div className="App">
@@ -22,6 +24,8 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/buy" element={<BuyCredit />} />
+          <Route path='/round1' element={<Round1 />} />
+          <Route path='/round2' element={<Round2 />} />
         </Routes>
         <ExamPage />
         <Footer />

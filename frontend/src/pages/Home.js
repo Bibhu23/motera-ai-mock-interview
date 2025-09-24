@@ -1,5 +1,6 @@
 import React from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { useNavigate } from "react-router-dom"
 import './Home.css';
 
 const Home = () => {
@@ -49,6 +50,8 @@ const Home = () => {
     // Choose which data to display
     const displayData = rounds; // Change to `steps` to show steps
 
+    const navigate = useNavigate()
+
     return (
         <>
             {/* Top Section with Lottie */}
@@ -66,7 +69,7 @@ const Home = () => {
                         Generate content, analyze data, and explore AI-powered solutions all
                         in one place.
                     </p>
-                    <button className="button" onClick={() => alert("Generate clicked!")}>
+                    <button className="button" onClick={() => navigate("/round1")}>
                         Generate
                     </button>
                 </div>

@@ -1,117 +1,91 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import useInterviewSocket from "../hook/useSockethook";
-
-const LiveInterviewPage = ({ user }) => {
+import "./ExamPage.css";
+export default function ExamPage() {
     const [question, setQuestion] = useState(null);
     const [qIndex, setQIndex] = useState(0);
-    const [total, setTotal] = useState(10);
-    const [answer, setAnswer] = useState("");
-    const [analysis, setAnalysis] = useState(null);
-    const [finishedSummary, setFinishedSummary] = useState(null);
-    const [showFeedback, setShowFeedback] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [result, setResult] = useState(null);
+    const [summary, setSummary] = useState(null);
 
-    // Stable callbacks
+
+
     const handleQuestion = useCallback(({ question, qIndex, total }) => {
         setQuestion(question);
         setQIndex(qIndex);
         setTotal(total);
-        setAnalysis(null);
-        setAnswer("");
-        setShowFeedback(false);
+        setResult(null);
     }, []);
 
-    const handleAnalysis = useCallback(({ qIndex, evaluation }) => {
-        setAnalysis(evaluation);
-        setShowFeedback(true); // show feedback when analysis arrives
+    const handleAnswerResult = useCallback((res) => {
+        setResult(res);
     }, []);
 
-    const handleFinished = useCallback(({ summary }) => {
-        setFinishedSummary(summary);
+    const handleFinished = useCallback((sum) => {
+        setSummary(sum);
     }, []);
 
-    const { start, submitAnswer, connected } = useInterviewSocket({
+
+    const { start, submitAnswer, next, prev, connected } = useInterviewSocket({
         url: process.env.REACT_APP_API_URL || "http://localhost:7656",
         onQuestion: handleQuestion,
-        onAnalysis: handleAnalysis,
+        onAnswerResult: handleAnswerResult,
         onFinished: handleFinished,
     });
 
     useEffect(() => {
-        if (!connected || finishedSummary) return;
+        if (connected) {
+            start({ skills: ["javascript", "nodejs"], total: 5 });
+        }
+    }, [connected, start]);
 
-        const skills = user?.skills || ["javascript", "nodejs"];
-        start({ userId: user?.id || "anon", skills, total: 10, preGenerate: true });
-    }, [connected, user, start, finishedSummary]);
-
-    const handleSubmit = () => {
-        if (!question) return;
-        submitAnswer({ qIndex, answer });
-    };
-
-    const handleNext = () => {
-        submitAnswer.socketRef?.current?.emit("nextQuestion"); // emit nextQuestion event
-        setShowFeedback(false);
-    };
+    if (!connected) return <p>🔌 Connecting...</p>;
+    if (summary) {
+        return (
+            <div>
+                <h2>✅ Quiz Finished</h2>
+                <p>Correct: {summary.correct}</p>
+                <p>Wrong: {summary.wrong}</p>
+                <p>Total: {summary.total}</p>
+            </div>
+        );
+    }
 
     return (
-        <div style={{ padding: 20 }}>
-            <h2>Live Mock Interview</h2>
-            <p>Socket: {connected ? "connected" : "disconnected"}</p>
+        <div className="exam-container">
+            <h2>Question {qIndex}/{total}</h2>
 
-            {finishedSummary ? (
-                <div>
-                    <h3>Finished</h3>
-                    <p>Total: {finishedSummary.total}</p>
-                    <p>Answered: {finishedSummary.answered}</p>
-                    <p>Average Score: {finishedSummary.averageScore}</p>
-                </div>
-            ) : question ? (
-                <>
-                    <div>
-                        <h3>Q{qIndex}: {question.question}</h3>
-                        {question.options?.length > 0 ? (
-                            question.options.map((o, i) => (
-                                <div key={i}>
-                                    <label>
-                                        <input
-                                            type="radio"
-                                            name="opt"
-                                            value={o}
-                                            onChange={(e) => setAnswer(e.target.value)}
-                                        /> {o}
-                                    </label>
-                                </div>
-                            ))
-                        ) : (
-                            <textarea
-                                rows={6}
-                                value={answer}
-                                onChange={(e) => setAnswer(e.target.value)}
-                                style={{ width: "100%" }}
-                            />
-                        )}
+            {question && (
+                <div className="question-box">
+                    <p>{question.question}</p>
+                    <div className="options">
+                        {question.options?.map((opt, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => submitAnswer({ qIndex, answer: opt })}
+                                disabled={!!result}
+                            >
+                                {opt}
+                            </button>
+                        ))}
                     </div>
+                </div>
+            )}
 
-                    {!showFeedback && (
-                        <div style={{ marginTop: 12 }}>
-                            <button onClick={handleSubmit}>Send Answer</button>
-                        </div>
-                    )}
-
-                    {analysis && showFeedback && (
-                        <div style={{ marginTop: 16, padding: 12, border: "1px solid #ddd" }}>
-                            <h4>Feedback (score: {analysis.score})</h4>
-                            <p>{analysis.feedback}</p>
-                            <p><strong>Improve:</strong> {analysis.improvements}</p>
-                            <button onClick={handleNext} style={{ marginTop: 8 }}>Next Question</button>
-                        </div>
-                    )}
-                </>
-            ) : (
-                <p>Waiting for first question...</p>
+            {result && (
+                <div className="result-box">
+                    <p className={result.isCorrect ? "correct" : "wrong"}>
+                        {result.isCorrect ? "✅ Correct!" : "❌ Wrong!"}
+                    </p>
+                    <p>Correct Answer: {result.correctAnswer}</p>
+                    <p>{result.explanation}</p>
+                    <div className="nav-buttons">
+                        <button onClick={prev} disabled={qIndex <= 1}>Prev</button>
+                        <button onClick={next} disabled={qIndex >= total}>Next</button>
+                    </div>
+                </div>
             )}
         </div>
-    );
-};
 
-export default LiveInterviewPage;
+    );
+}

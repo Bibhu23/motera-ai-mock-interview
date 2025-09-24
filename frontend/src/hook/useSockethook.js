@@ -1,35 +1,58 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 
-export default function useInterviewSocket({ url, onQuestion, onAnalysis, onFinished }) {
+export default function useInterviewSocket({ url, onQuestion, onAnswerResult, onFinished }) {
     const socketRef = useRef(null);
     const [connected, setConnected] = useState(false);
 
     useEffect(() => {
-        if (socketRef.current) return; // prevent reconnect
+        if (socketRef.current) return;
 
-        const socket = io(url || "http://localhost:7656", {
+
+        const socket = io(url, {
             transports: ["websocket", "polling"],
             withCredentials: true,
         });
 
         socketRef.current = socket;
 
-        socket.on("connect", () => setConnected(true));
-        socket.on("disconnect", () => setConnected(false));
-        socket.on("question", (payload) => onQuestion?.(payload));
-        socket.on("analysis", (payload) => onAnalysis?.(payload));
-        socket.on("finished", (payload) => onFinished?.(payload));
-        socket.on("error", (e) => console.error("Socket error:", e));
+        socket.on("connect", () => {
+            setConnected(true);
+            console.log("✅ Connected:", socket.id);
+        });
+        socket.on("disconnect", () => {
+            setConnected(false);
+            console.log("❌ Disconnected");
+        });
+        socket.on("connect_error", (err) => {
+            console.error("⚠️ Connection error:", err.message);
+        });
+
+        socket.on("question", (data) => onQuestion && onQuestion(data));
+        socket.on("answerResult", (data) => onAnswerResult && onAnswerResult(data));
+        socket.on("finished", (data) => onFinished && onFinished(data));
 
         return () => {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [url, onQuestion, onAnalysis, onFinished]);
+    }, [url, onQuestion, onAnswerResult, onFinished]);
 
-    const start = (opts) => socketRef.current?.emit("startInterview", opts);
-    const submitAnswer = (payload) => socketRef.current?.emit("submitAnswer", payload);
+    const start = useCallback((opts) => {
+        socketRef.current?.emit("startInterview", opts);
+    }, []);
 
-    return { start, submitAnswer, connected };
+    const submitAnswer = useCallback((answer) => {
+        socketRef.current?.emit("submitAnswer", answer);
+    }, []);
+
+    const next = useCallback(() => {
+        socketRef.current?.emit("next");
+    }, []);
+
+    const prev = useCallback(() => {
+        socketRef.current?.emit("prev");
+    }, []);
+
+    return { start, submitAnswer, next, prev, connected };
 }
