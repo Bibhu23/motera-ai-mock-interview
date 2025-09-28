@@ -74,7 +74,7 @@ function Signup() {
                         type="text"
                         name="name"
                         className="form-control"
-                        value={form.name}
+                        value={form.name} 
                         onChange={handlechnage}
                         required
                     />

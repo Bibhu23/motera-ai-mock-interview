@@ -19,8 +19,6 @@ export default function Login() {
             const res = await Gpi.post('/user/api/v1/login', loginForm,
                 { withCredentials: true }
             );
-
-
             if (res.data && res.data.user) {
                 setUser(res.data.user);
             }
@@ -29,7 +27,6 @@ export default function Login() {
         } catch (err) {
             alert("Login failed: " + err.response?.data?.message || err.message);
         }
-
     }
     const handleLoginChange = (e) => {
         setLoginForm({ ...loginForm, [e.target.name]: e.target.value })

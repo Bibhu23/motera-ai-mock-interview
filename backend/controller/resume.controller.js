@@ -1,38 +1,23 @@
-import fs from 'fs'
 import { parseResume } from "../service/resumeParserService.js";
+import fs from "fs";
+import { scoreResume } from "../utils/scoringEngine.js";
 
-// Controller to handle resume upload
 export const uploadResumeController = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: "No file uploaded" });
         }
 
-        // Convert file to base64
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const base64File = fileBuffer.toString("base64");
-
-        // Parse resume via ResumeParser
-        const parsedData = await parseResume(base64File);
-
-        // Delete temporary file
+        const parsedData = await parseResume(req.file.path);
         fs.unlinkSync(req.file.path);
 
-        // Example scoring logic (job-specific keywords)
-        const keywords = ["React", "JavaScript", "Node.js", "Python", "SQL"];
-        let score = 0;
-        const text = parsedData.text || ""; // ResumeParser returns parsed text
+        // ✅ Set role statically (defined by your company)
+        const role = "MERN Full Stack Developer";
 
-        keywords.forEach((kw) => {
-            if (text.toLowerCase().includes(kw.toLowerCase())) score += 10;
-        });
+        const { score, matchedSkills, feedback } = scoreResume(parsedData, role);
 
-        res.json({ score, parsedData });
-
+        res.json({ score, matchedSkills, feedback, parsedData, role });
     } catch (err) {
-        console.error("Upload failed:", err.response?.data || err.message);
-        res.status(500).json({
-            error: err.response?.data || err.message || "Internal Server Error",
-        });
+        res.status(500).json({ error: err.message || "Internal Server Error" });
     }
 };

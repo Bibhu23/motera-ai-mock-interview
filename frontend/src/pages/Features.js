@@ -33,6 +33,26 @@ function Features() {
             desc: "Prepare for technical certifications and advanced role interviews."
         }
     ];
+    const steps = [
+        {
+            number: "01",
+            icon: "📝",
+            title: "Set Your Goal",
+            desc: "Define your dream role and skill level so the platform can tailor your practice exactly to your needs."
+        },
+        {
+            number: "02",
+            icon: "⚡",
+            title: "Engage with AI",
+            desc: "Experience dynamic AI-powered interviews that adapt to your answers in real-time for a realistic experience."
+        },
+        {
+            number: "03",
+            icon: "🔍",
+            title: "Analyze & Improve",
+            desc: "Get deep insights on your performance, identify strengths and weaknesses, and track improvement over time."
+        }
+    ];
 
     const feedbacks = [
         {
@@ -128,6 +148,49 @@ function Features() {
                     </div>
                 </div>
             </div>
+            {/* ====== How It Works Section ====== */}
+            <div className="features-section mb-5" id="works">
+                <div className="d-inline-flex align-items-center justify-content-center mb-2 border rounded-pill px-3 py-1">
+                    <span style={{ fontSize: "20px", marginRight: "8px" }}>⚡</span>
+                    <span className="text-uppercase fw-semibold text-primary">How It Works</span>
+                </div>
+
+                <h2 className="fw-bold text-center mb-5">Step-by-Step Process</h2>
+                <p className="text-muted text-center mb-5" style={{ fontSize: "18px" }}>
+                    Follow these simple steps to get started and make the most of our platform.
+                </p>
+
+                <div className="container">
+                    <div className="row justify-content-center">
+                        {steps.map((step, index) => (
+                            <div className="col-md-4 mb-4" key={index}>
+                                <div className="card h-100 shadow-sm border-0 text-center p-4 position-relative">
+                                    {/* Step Number Circle */}
+                                    <div
+                                        className="position-absolute top-0 start-50 translate-middle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                        style={{
+                                            width: "50px",
+                                            height: "50px",
+                                            fontSize: "20px",
+                                            top: "-25px",
+                                        }}
+                                    >
+                                        {step.number}
+                                    </div>
+
+                                    {/* Icon */}
+                                    <div className="mb-3" style={{ fontSize: "40px" }}>{step.icon}</div>
+
+                                    {/* Title & Description */}
+                                    <h5 className="mt-2">{step.title}</h5>
+                                    <p className="text-muted">{step.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
 
             {/* ----------- Feedback Section Styled like Features ---------- */}
             <div className="features-section py-5" id="feedback">
@@ -169,43 +232,46 @@ function Features() {
             {/* ====== CTA Section ====== */}
             <div className="features-section py-5 text-center bg-light">
                 <div className="container">
-                    <h2 className="fw-bold mb-4">Take Your Interview Skills to the Next Level</h2>
+                    {/* Heading */}
+                    <h2 className="fw-bold mb-3">Take Your Interview Skills to the Next Level</h2>
+
+                    {/* Subtext */}
                     <p className="text-muted mb-5" style={{ fontSize: "18px" }}>
                         Join thousands of professionals who have improved their confidence and performance with Motera AI Mock Interviews.
                     </p>
 
-                    {/* Start Free Trial Card */}
-                    <div className="mb-4">
-                        <Link
-                            to="/signup"
-                            className="card h-100 shadow-sm border-0 p-4 text-decoration-none text-dark d-flex flex-column align-items-center justify-content-center"
-                        >
-                            <div style={{ fontSize: "50px", marginBottom: "15px" }}>🚀</div>
-                            <h5 className="fw-semibold mb-2">Start Free Trial</h5>
-                            <p className="text-muted" style={{ fontSize: "14px" }}>
-                                No credit card required. Free 7-day trial. Cancel anytime.
-                            </p>
-                        </Link>
-                    </div>
+                    {/* Cards Row */}
+                    <div className="row justify-content-center g-4">
+                        {/* Start Free Trial Card */}
+                        <div className="col-md-6">
+                            <Link
+                                to="/signup"
+                                className="card h-100 shadow-sm border-0 p-4 text-decoration-none text-dark d-flex flex-column align-items-center justify-content-center"
+                            >
+                                <div style={{ fontSize: "50px", marginBottom: "15px" }}>🚀</div>
+                                <h5 className="fw-semibold mb-2">Start Free Trial</h5>
+                                <p className="text-muted" style={{ fontSize: "14px" }}>
+                                    No credit card required. Free 7-day trial. Cancel anytime.
+                                </p>
+                            </Link>
+                        </div>
 
-                    {/* Watch Demo Card */}
-                    <div>
-                        <div
-                            className="card h-100 shadow-sm border-0 p-4 d-flex flex-column align-items-center justify-content-center"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => console.log("Watch Demo clicked")}
-                        >
-                            <div style={{ fontSize: "50px", marginBottom: "15px" }}>🎬</div>
-                            <h5 className="fw-semibold mb-2">Watch Demo</h5>
-                            <p className="text-muted" style={{ fontSize: "14px" }}>
-                                See how Motera transforms your interview preparation.
-                            </p>
+                        {/* Watch Demo Card */}
+                        <div className="col-md-6">
+                            <Link
+                                to="/demo"
+                                className="card h-100 shadow-sm border-0 p-4 text-decoration-none text-dark d-flex flex-column align-items-center justify-content-center"
+                            >
+                                <div style={{ fontSize: "50px", marginBottom: "15px" }}>🎬</div>
+                                <h5 className="fw-semibold mb-2">Watch Demo</h5>
+                                <p className="text-muted" style={{ fontSize: "14px" }}>
+                                    See how Motera transforms your interview preparation.
+                                </p>
+                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </section>
     );
 }

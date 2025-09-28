@@ -1,23 +1,23 @@
 import axios from "axios";
+import FormData from "form-data";
+import fs from "fs";
 
 const API_URL = "https://resumeparser.app/resume/parse";
-const API_KEY = process.env.RESUME_PARSER_API_KEY; // your ResumeParser API key
+const API_KEY = process.env.RESUME_PARSER_API_KEY;
 
-export async function parseResume(base64File) {
+export async function parseResume(filePath) {
     try {
-        const response = await axios.post(
-            API_URL,
-            { file: base64File }, // JSON body with base64
-            {
-                headers: {
-                    Authorization: `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        const form = new FormData();
+        form.append("file", fs.createReadStream(filePath));
+
+        const response = await axios.post(API_URL, form, {
+            headers: {
+                ...form.getHeaders(),
+                Authorization: `Bearer ${API_KEY}`,
+            },
+        });
 
         return response.data;
-
     } catch (err) {
         console.error("Error parsing resume:", err.response?.data || err.message);
         throw err;

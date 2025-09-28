@@ -39,11 +39,12 @@ function Navbar() {
                             <Link className="nav-link" to="/features">Features</Link>
                         </li>
                         <li className="nav-item">
-                            <Link className="nav-link" to="/how-it-works">How It Works</Link>
+                            <a className="nav-link" href="/features#works">How It Works</a>
                         </li>
                         <li className="nav-item">
-                            <Link className="nav-link" to="/success-stories">Success Stories</Link>
+                            <a className="nav-link" href="/features#feedback">Success Stories</a>
                         </li>
+
                         <li className="nav-item">
                             <Link className="nav-link" to="/login">Sign In</Link>
                         </li>
