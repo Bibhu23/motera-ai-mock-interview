@@ -1,5 +1,5 @@
 import { getGeminiQuestions } from "../service/GeminiService.js"; // adjust path if needed
-
+import User from "../model/userModel.js";
 export default function initInterviewSocket(io) {
     const sessions = new Map();
 
@@ -7,11 +7,11 @@ export default function initInterviewSocket(io) {
         console.log("✅ Socket connected:", socket.id);
 
         // 🎯 Start interview
-        socket.on("startInterview", async ({ userId = "anon", skills = [], total = 5 }) => {
+        socket.on("startInterview", async ({ userId, total = 10 }) => {
             const session = {
                 id: ` ${userId}:${Date.now()}`,
                 userId,
-                skills,
+
                 total,
                 current: 0,
                 questions: [],
@@ -21,15 +21,27 @@ export default function initInterviewSocket(io) {
 
             try {
                 // ✅ Generate all questions once using Gemini
-                const section = skills.length ? skills[0] : "general";
+                let skills = [];
+                if (userId && userId !== "anon") {
+                    const user = await User.findById(userId);
+                    skills = user?.skills?.length ? user.skills : ["general"];
+                } else {
+                    skills = ["general"];
+                }
+                const section = Array.isArray(skills) ? skills[0] : "general";
                 session.questions = await getGeminiQuestions(section, total);
 
-                console.log(`📚 Generated ${session.questions.length} questions for ${userId}`);
+
+                console.log(
+                    `📚 Generated ${session.questions.length} questions for ${userId}`
+                );
                 // send first question
                 await pushNextQuestion(socket);
             } catch (err) {
                 console.error("⚠️ Failed to generate questions:", err.message);
-                socket.emit("error", { message: "Failed to generate questions, please try again." });
+                socket.emit("error", {
+                    message: "Failed to generate questions, please try again.",
+                });
             }
         });
 
@@ -74,7 +86,9 @@ export default function initInterviewSocket(io) {
 
             const nextIdx = session.current + 1;
             if (nextIdx > session.total) {
-                const correct = session.answers.filter((a) => a.result.isCorrect).length;
+                const correct = session.answers.filter(
+                    (a) => a.result.isCorrect
+                ).length;
                 const wrong = session.answers.length - correct;
                 const summary = { total: session.total, correct, wrong };
                 socketRef.emit("finished", summary);

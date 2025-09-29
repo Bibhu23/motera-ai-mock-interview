@@ -48,7 +48,7 @@ const Home = () => {
     ];
 
     // Choose which data to display
-    const displayData = rounds; // Change to `steps` to show steps
+    const displayData = rounds; // Change to steps to show steps
 
     const navigate = useNavigate()
 
@@ -66,11 +66,10 @@ const Home = () => {
                 <div className="text">
                     <h1>Motera AI Platform</h1>
                     <p>
-                        Generate content, analyze data, and explore AI-powered solutions all
-                        in one place.
+                        Start Your Interview Journey By Click Start
                     </p>
                     <button className="button" onClick={() => navigate("/round1")}>
-                        Generate
+                        Start
                     </button>
                 </div>
             </div>

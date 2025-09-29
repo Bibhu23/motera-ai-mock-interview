@@ -10,14 +10,19 @@ export async function parseResume(filePath) {
         const form = new FormData();
         form.append("file", fs.createReadStream(filePath));
 
-        const response = await axios.post(API_URL, form, {
-            headers: {
-                ...form.getHeaders(),
-                Authorization: `Bearer ${API_KEY}`,
-            },
-        });
+        const response = await axios.post(
+            API_URL,
+            form,
+            {
+                headers: {
+                    ...form.getHeaders(),
+                    Authorization: `Bearer ${API_KEY}`,
+                },
+            }
+        );
 
         return response.data;
+
     } catch (err) {
         console.error("Error parsing resume:", err.response?.data || err.message);
         throw err;

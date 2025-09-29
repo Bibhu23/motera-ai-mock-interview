@@ -25,7 +25,7 @@ export const createOrder = async (req, res) => {
             amount: product.amount,
             currency: 'INR',
             receipt: ` rcpt_${Date.now()}`,
-            notes: { userId: req.body.userId, productId }
+            notes: { userId: req.user.id, productId }
         });
 
         return res.status(201).json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
@@ -50,7 +50,7 @@ export const verifyPayment = async (req, res) => {
         const product = PRODUCTS[productId];
         if (!product) return res.status(400).json({ success: false, message: 'Invalid productId' });
 
-        const user = await User.findById(req.body.userId);
+        const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         const newBalance = (user.creditBalance || 0) + product.credits;

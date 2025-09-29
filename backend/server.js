@@ -9,10 +9,11 @@ import paymentrouter from "./route/payment.js";
 import cookieParser from "cookie-parser";
 import geminiRoutes from "./route/gemini.route.js"
 import initInterviewSocket from "./handler/interViewSocket.js";
+// import interViewRouter from "./route/interview.route.js"
+// import {initLiveInterviewSocket} from "./handler/LiveinterviewSocket.js"
 import { createServer } from "http";
 import resumeRouter from "./route/resume.route.js"
-
-
+// import liveInterviewRouter from "./route/interview.route.js";;
 const port = process.env.PORT || 7656;
 const app = express();
 //handling cors error
@@ -27,8 +28,9 @@ app.use(cookieParser());
 app.use("/user/api/v1", userRouter);
 app.use("/api/payment", paymentrouter);
 app.use("/api/gemini", geminiRoutes);
+// app.use("/api/interview", interViewRouter);
 app.use("/api", resumeRouter);
-
+// app.use("/api", liveInterviewRouter);
 
 const startServer = async () => {
     try {
@@ -46,6 +48,7 @@ const startServer = async () => {
 
         // Setup socket handlers (see socket/interviewSocket.js)
         initInterviewSocket(io);
+        // initLiveInterviewSocket(io);
 
         httpServer.listen(port, () => {
             console.log(`Server running at http://localhost:${port}`);

@@ -1,11 +1,10 @@
-// npm install axios react-router-dom bootstrap
-
-import { useState } from "react";
+import React, { useState } from "react";
 import Gpi from "../Gpi";
-import { useNavigate } from "react-router";
-
-function Signup() {
-    const [form, Setform] = useState({
+import { useNavigate } from "react-router-dom";
+import "./Login.css"; // Reuse the Login CSS for exact style
+import bgImg from "../assets/moterabac.jfif"
+export default function Signup() {
+    const [form, setForm] = useState({
         name: "",
         email: "",
         password: "",
@@ -17,177 +16,108 @@ function Signup() {
         linkedInUrl: "",
         resume: null,
     });
-    const [error, Seterror] = useState("");
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    const handlechnage = (event) => {
-        Setform({ ...form, [event.target.name]: event.target.value });
-    };
+    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+    const handleResume = (e) => setForm({ ...form, resume: e.target.files[0] });
 
-    const handleResume = (e) => {
-        Setform({ ...form, resume: e.target.files[0] });
-    };
-
-    const handlesubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (form.password !== form.confirmPassword) {
-            Seterror("Passwords do not match");
+            setError("Passwords do not match");
             return;
         }
-
         try {
-            // Create FormData for handling file upload
             const formData = new FormData();
-            formData.append("name", form.name);
-            formData.append("email", form.email);
-            formData.append("password", form.password);
-            formData.append("role", form.role);
-            formData.append("experienceYears", Number(form.experienceYears));
-            formData.append("skills", form.skills);
-            formData.append("phone", form.phone);
-            formData.append("linkedInUrl", form.linkedInUrl);
+            Object.keys(form).forEach((key) => form[key] && formData.append(key, form[key]));
 
-            if (form.resume) {
-                formData.append("resume", form.resume);
-            }
-
-            const response = await Gpi.post("/user/api/v1/register", formData, {
+            const res = await Gpi.post("/user/api/v1/register", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-
-            console.log("Response:", response.data);
-            navigate("/login"); // Uncomment when you add login page
+            navigate("/login");
         } catch (err) {
-            Seterror(err.response?.data?.message || "Signup failed");
+            setError(err.response?.data?.message || "Signup failed");
         }
     };
 
     return (
-        <div className="container mt-5">
-            {error && <div className="alert alert-danger">{error}</div>}
-            <h2>Signup</h2>
-            <form onSubmit={handlesubmit} className="col-md-8">
-                <div className="mb-3">
-                    <label>Full Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        className="form-control"
-                        value={form.name} 
-                        onChange={handlechnage}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        className="form-control"
-                        value={form.email}
-                        onChange={handlechnage}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        className="form-control"
-                        value={form.password}
-                        onChange={handlechnage}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Confirm Password</label>
-                    <input
-                        type="password"
-                        name="confirmPassword"
-                        className="form-control"
-                        value={form.confirmPassword}
-                        onChange={handlechnage}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Role / Job Title</label>
-                    <select
-                        name="role"
-                        className="form-select"
-                        value={form.role}
-                        onChange={handlechnage}
-                        required
-                    >
-                        <option value="">Select Role</option>
-                        <option value="React Developer">React Developer</option>
-                        <option value="Data Analyst">Data Analyst</option>
-                        <option value="Backend Developer">Backend Developer</option>
-                        <option value="Fullstack Developer">Fullstack Developer</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label>Years of Experience</label>
-                    <input
-                        type="number"
-                        name="experienceYears"
-                        className="form-control"
-                        value={form.experienceYears}
-                        min="0"
-                        onChange={handlechnage}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Skills (comma separated)</label>
-                    <input
-                        type="text"
-                        name="skills"
-                        className="form-control"
-                        placeholder="e.g. React, Node.js, SQL"
-                        value={form.skills}
-                        onChange={handlechnage}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Phone Number</label>
-                    <input
-                        type="text"
-                        name="phone"
-                        className="form-control"
-                        value={form.phone}
-                        onChange={handlechnage}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>LinkedIn Profile</label>
-                    <input
-                        type="url"
-                        name="linkedInUrl"
-                        className="form-control"
-                        value={form.linkedInUrl}
-                        onChange={handlechnage}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label>Upload Resume</label>
-                    <input
-                        type="file"
-                        name="resume"
-                        className="form-control"
-                        onChange={handleResume}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">
-                    Signup
-                </button>
-            </form>
+        <div
+            className="login-wrapper"
+            style={{ backgroundImage: `url(${bgImg})` }}
+        >
+            <div className="login-card">
+                <div className="logo">🤖</div>
+                <h2>Motera AI Signup</h2>
+                <p className="subtitle">Create your account to start AI-powered practice</p>
+
+                {error && <div className="alert alert-danger">{error}</div>}
+
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group">
+                        <span className="icon">👤</span>
+                        <input type="text" name="name" placeholder="Full Name" value={form.name} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">📧</span>
+                        <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">🔒</span>
+                        <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">🔑</span>
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">💼</span>
+                        <select name="role" value={form.role} onChange={handleChange} required>
+                            <option value="">Select Role</option>
+                            <option value="React Developer">React Developer</option>
+                            <option value="Data Analyst">Data Analyst</option>
+                            <option value="Backend Developer">Backend Developer</option>
+                            <option value="Fullstack Developer">Fullstack Developer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">⏳</span>
+                        <input type="number" name="experienceYears" placeholder="Years of Experience" min="0" value={form.experienceYears} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">🛠️</span>
+                        <input type="text" name="skills" placeholder="Skills (comma separated)" value={form.skills} onChange={handleChange} />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">📱</span>
+                        <input type="text" name="phone" placeholder="Phone Number" value={form.phone} onChange={handleChange} />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">🔗</span>
+                        <input type="url" name="linkedInUrl" placeholder="LinkedIn URL" value={form.linkedInUrl} onChange={handleChange} />
+                    </div>
+
+                    <div className="input-group">
+                        <span className="icon">📄</span>
+                        <input type="file" name="resume" onChange={handleResume} required />
+                    </div>
+
+                    <button type="submit" className="login-btn">Signup</button>
+                </form>
+
+                <p className="register">
+                    Already Registered? <a href="/login">Login Here</a>
+                </p>
+            </div>
         </div>
     );
 }
-
-export default Signup;

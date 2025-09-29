@@ -120,3 +120,28 @@
     font-size: 1rem;
     margin: 6px 0;
 }
+
+/* Add at the end of ExamPage.css */
+.btn-success {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    margin-top: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-success:hover {
+    background: #219150;
+}
+
+/* Add to ExamPage.css */
+.score-live {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #27ae60;
+    margin-bottom: 10px;
+}

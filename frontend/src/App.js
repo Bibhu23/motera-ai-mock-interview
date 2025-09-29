@@ -12,6 +12,7 @@ import ExamPage from './components/ExamPage';
 import Features from './pages/Features';
 import Round1 from './pages/Round1';
 import Round2 from './pages/Round2';
+import LiveVideoInterviewPage from './pages/LiveVideoInterviewPage';
 function App() {
   return (
     <div className="App">
@@ -26,6 +27,7 @@ function App() {
           <Route path="/buy" element={<BuyCredit />} />
           <Route path='/round1' element={<Round1 />} />
           <Route path='/round2' element={<Round2 />} />
+          <Route path='/livevideo' element={<LiveVideoInterviewPage />} />
         </Routes>
         <ExamPage />
         <Footer />

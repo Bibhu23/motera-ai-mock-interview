@@ -3,7 +3,7 @@ import Gpi from "../Gpi";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-export const AppContext = createContext();
+export const AppContext = createContext();//create context
 
 const AppContextProvider = (props) => {
     const [user, setUser] = useState(null);

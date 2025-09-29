@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import useInterviewSocket from "../hook/useSockethook";
 import "./ExamPage.css";
 export default function ExamPage() {
@@ -7,8 +8,9 @@ export default function ExamPage() {
     const [total, setTotal] = useState(0);
     const [result, setResult] = useState(null);
     const [summary, setSummary] = useState(null);
+    const [correctCount, setCorrectCount] = useState(0); // NEW
 
-
+    const navigate = useNavigate();
 
     const handleQuestion = useCallback(({ question, qIndex, total }) => {
         setQuestion(question);
@@ -19,12 +21,12 @@ export default function ExamPage() {
 
     const handleAnswerResult = useCallback((res) => {
         setResult(res);
+        if (res.isCorrect) setCorrectCount((prev) => prev + 1); // NEW
     }, []);
 
     const handleFinished = useCallback((sum) => {
         setSummary(sum);
     }, []);
-
 
     const { start, submitAnswer, next, prev, connected } = useInterviewSocket({
         url: process.env.REACT_APP_API_URL || "http://localhost:7656",
@@ -35,24 +37,32 @@ export default function ExamPage() {
 
     useEffect(() => {
         if (connected) {
+            setCorrectCount(0); // Reset on new exam
             start({ skills: ["javascript", "nodejs"], total: 5 });
         }
     }, [connected, start]);
 
     if (!connected) return <p>🔌 Connecting...</p>;
     if (summary) {
+        const passed = summary.correct >= 6;
         return (
-            <div>
-                <h2>✅ Quiz Finished</h2>
+            <div className="summary-box">
+                <h2>{passed ? "🎉 Passed!" : "❌ Not Qualified"}</h2>
                 <p>Correct: {summary.correct}</p>
                 <p>Wrong: {summary.wrong}</p>
                 <p>Total: {summary.total}</p>
+                {passed && (
+                    <button className="btn btn-success" onClick={() => navigate("/round3")}>
+                        Go to Next Round
+                    </button>
+                )}
             </div>
         );
     }
 
     return (
         <div className="exam-container">
+            <p className="score-live">✅ Correct Answers: {correctCount}</p> {/* NEW */}
             <h2>Question {qIndex}/{total}</h2>
 
             {question && (
@@ -86,6 +96,5 @@ export default function ExamPage() {
                 </div>
             )}
         </div>
-
     );
 }
