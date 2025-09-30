@@ -8,7 +8,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/footer';
 import Login from './components/Login';
 import BuyCredit from './pages/BuyCredit';
-import ExamPage from './components/ExamPage';
+
 import Features from './pages/Features';
 import Round1 from './pages/Round1';
 import Round2 from './pages/Round2';
@@ -29,7 +29,7 @@ function App() {
           <Route path='/round2' element={<Round2 />} />
           <Route path='/livevideo' element={<LiveVideoInterviewPage />} />
         </Routes>
-        <ExamPage />
+     
         <Footer />
       </div>
     </div>

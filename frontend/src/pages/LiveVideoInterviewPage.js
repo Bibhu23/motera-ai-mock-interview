@@ -1,81 +1,108 @@
 import { useRef, useEffect } from 'react'
 import * as faceapi from 'face-api.js'
+import { useNavigate } from 'react-router-dom'
 import './LiveVideoInterviewPage.css'
+
 function LiveVideoInterviewPage() {
     const videoRef = useRef()
     const canvasRef = useRef()
+    const navigate = useNavigate()
+    let noFaceStartTime = null
+    let detectionInterval = null
 
-    // LOAD FROM USEEFFECT
     useEffect(() => {
         startVideo()
-        videoRef && loadModels()
-
+        loadModels()
+        return () => {
+            clearInterval(detectionInterval)
+        }
     }, [])
 
-
-
-    // OPEN YOU FACE WEBCAM
     const startVideo = () => {
         navigator.mediaDevices.getUserMedia({ video: true })
-            .then((currentStream) => {
-                videoRef.current.srcObject = currentStream
+            .then(stream => {
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream
+                }
             })
-            .catch((err) => {
-                console.log(err)
-            })
-    }
-    // LOAD MODELS FROM FACE API
-
-    const loadModels = () => {
-        Promise.all([
-            // THIS FOR FACE DETECT AND LOAD FROM YOU PUBLIC/MODELS DIRECTORY
-            faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-            faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-            faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-            faceapi.nets.faceExpressionNet.loadFromUri("/models")
-
-        ]).then(() => {
-            faceMyDetect()
-        })
+            .catch(err => console.error("Camera error:", err))
     }
 
-    const faceMyDetect = () => {
-        setInterval(async () => {
-            const detections = await faceapi.detectAllFaces(videoRef.current,
-                new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
+    const loadModels = async () => {
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+            faceapi.nets.faceExpressionNet.loadFromUri('/models')
+        ])
+    }
 
-            // DRAW YOU FACE IN WEBCAM
-            canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(videoRef.current)
-            faceapi.matchDimensions(canvasRef.current, {
-                width: 940,
-                height: 650
-            })
+    const handleVideoPlay = () => {
+        const video = document.getElementById('interviewVideo') // use unique id
+        const canvas = canvasRef.current
 
-            const resized = faceapi.resizeResults(detections, {
-                width: 940,
-                height: 650
-            })
+        if (!video || !canvas) return
 
-            faceapi.draw.drawDetections(canvasRef.current, resized)
-            faceapi.draw.drawFaceLandmarks(canvasRef.current, resized)
-            faceapi.draw.drawFaceExpressions(canvasRef.current, resized)
+        const displaySize = { width: 640, height: 480 }
+        faceapi.matchDimensions(canvas, displaySize)
 
+        if (detectionInterval) clearInterval(detectionInterval)
 
-        }, 1000)
+        detectionInterval = setInterval(async () => {
+            if (!video || video.readyState !== 4) return
+
+            const detections = await faceapi
+                .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceExpressions()
+
+            const resized = faceapi.resizeResults(detections, displaySize)
+            const ctx = canvas.getContext("2d")
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+            if (detections.length > 0) {
+                faceapi.draw.drawDetections(canvas, resized)
+                faceapi.draw.drawFaceLandmarks(canvas, resized)
+                faceapi.draw.drawFaceExpressions(canvas, resized)
+                noFaceStartTime = null
+            } else {
+                if (!noFaceStartTime) {
+                    noFaceStartTime = Date.now()
+                } else {
+                    const elapsed = Date.now() - noFaceStartTime
+                    if (elapsed > 5000) {
+                        eliminateCandidate()
+                    }
+                }
+            }
+        }, 500)
+    }
+
+    const eliminateCandidate = () => {
+        const stream = videoRef.current?.srcObject
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop())
+        }
+        clearInterval(detectionInterval)
+        alert("❌ Candidate eliminated! Redirecting...")
+        navigate("/")
     }
 
     return (
         <div className="myapp">
-            <h1>FAce Detection</h1>
+            <h1>Face Detection</h1>
             <div className="appvide">
-
-                <video crossOrigin="anonymous" ref={videoRef} autoPlay></video>
+                <video
+                    id="interviewVideo"   
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    onPlay={handleVideoPlay}
+                />
+                <canvas ref={canvasRef} className="appcanvas" />
             </div>
-            <canvas ref={canvasRef} width="940" height="650"
-                className="appcanvas" />
         </div>
     )
-
 }
 
-export default LiveVideoInterviewPage;
+export default LiveVideoInterviewPage

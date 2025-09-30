@@ -1,69 +1,105 @@
 import { Link } from "react-router-dom";
-
+import { useContext, useEffect } from "react";
+import { AppContext } from "../context/Appcontext";
 function Navbar() {
-    return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div className="container-fluid">
-                {/* Logo as AI icon + text */}
-                <Link className="navbar-brand d-flex align-items-center" to="/">
-                    <span
-                        style={{
-                            fontSize: '28px',
-                            marginRight: '10px',
-                            color: '#0dcaf0' // accent color for AI icon
-                        }}
-                    >
-                        🤖
-                    </span>
-                    <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '18px' }}>Motera</div>
-                        <div style={{ fontSize: '12px' }}>Mock Interview Platform</div>
-                    </div>
+  const { credit, getLocalcredits, user, login, logoutUser } =
+    useContext(AppContext);
+
+  useEffect(() => {
+    if (user) {
+      getLocalcredits();
+    }
+  }, [user]);
+  const handleLogout = () => {
+    logoutUser();
+  };
+  return (
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div className="container-fluid">
+        {/* Logo as AI icon + text */}
+        <Link className="navbar-brand d-flex align-items-center" to="/">
+          <span
+            style={{
+              fontSize: "28px",
+              marginRight: "10px",
+              color: "#0dcaf0", // accent color for AI icon
+            }}
+          >
+            🤖
+          </span>
+          <div>
+            <div style={{ fontWeight: "bold", fontSize: "18px" }}>Motera</div>
+            <div style={{ fontSize: "12px" }}>Mock Interview Platform</div>
+          </div>
+        </Link>
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav ms-auto">
+            <li className="nav-item">
+              <Link className="nav-link" to="/features">
+                Features
+              </Link>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link" href="/features#works">
+                How It Works
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link" href="/features#feedback">
+                Success Stories
+              </a>
+            </li>
+
+            {login ? (
+              <>
+                <li className="nav-item">
+                  <span className="nav-link text-white">Credits: {credit}</span>
+                </li>
+
+                <li className="nav-item">
+                  <button
+                    className="btn btn-danger nav-link"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li className="nav-item">
+                <Link className="nav-link" to="/login">
+                  Sign In
                 </Link>
-
-                <button
-                    className="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarNav"
-                    aria-controls="navbarNav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav ms-auto">
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/features">Features</Link>
-                        </li>
-                        <li className="nav-item">
-                            <a className="nav-link" href="/features#works">How It Works</a>
-                        </li>
-                        <li className="nav-item">
-                            <a className="nav-link" href="/features#feedback">Success Stories</a>
-                        </li>
-
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/login">Sign In</Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link
-                                className="nav-link btn btn-primary text-white ms-2 d-flex align-items-center"
-                                to="/signup"
-                                style={{ padding: '8px 16px' }}
-                            >
-                                <span style={{ marginRight: '8px', fontSize: '16px' }}>🚀</span>
-                                Start Free Trial
-                            </Link>
-                        </li>
-
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    );
+              </li>
+            )}
+            <li className="nav-item">
+              <Link
+                className="nav-link btn btn-primary text-white ms-2 d-flex align-items-center"
+                to="/signup"
+                style={{ padding: "8px 16px" }}
+              >
+                <span style={{ marginRight: "8px", fontSize: "16px" }}>🚀</span>
+                Start Free Trial
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
 }
 
 export default Navbar;

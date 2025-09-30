@@ -4,11 +4,12 @@ import { AppContext } from "../context/Appcontext";
 import { toast } from "react-toastify";
 import Gpi from "../Gpi";
 import "./BuyCredit.css"; // Import the CSS
+import { Navigate } from "react-router-dom";
 
 export default function BuyCredit() {
-    const { user, getLocalcredits } = useContext(AppContext);
+    const { user, getLocalcredits,login } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
-
+    
     const planToProductId = (planName) => {
         if (planName === "Basic") return "basic";
         if (planName === "Premium") return "premium";
@@ -83,7 +84,7 @@ export default function BuyCredit() {
     };
 
     return (
-        <div className="buycredit-container">
+        login? (<div className="buycredit-container">
             <button className="plans-btn">Plans</button>
 
             <h1 className="buycredit-title">Choose the Plan</h1>
@@ -105,6 +106,6 @@ export default function BuyCredit() {
                     </div>
                 ))}
             </div>
-        </div>
+        </div>):(<Navigate to="/login" />)
     );
 }

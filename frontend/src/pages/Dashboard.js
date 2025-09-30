@@ -7,14 +7,16 @@ import "./Dashboard.css";
 import DashboardNavbar from "./DashboardNavbar";
 import { Chart } from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-
-
+import { useContext } from "react";
+import { AppContext } from "../context/Appcontext";
+import { Navigate } from "react-router-dom";
 function Dashboard() {
     const user = { name: "Bibhu", avatar: "" };
 
     const barChartRef = useRef(null);
     const pieChartRef = useRef(null);
     const resultsChartRef = useRef(null);
+    const {login} = useContext(AppContext);
 
     useEffect(() => {
         // === BAR CHART (with X and Y axis) ===
@@ -164,6 +166,7 @@ function Dashboard() {
 
     }, []);
     return (
+        login ?(
         <div className="dashboard">
             <Sidebar />
 
@@ -201,7 +204,7 @@ function Dashboard() {
                 </div>
 
             </div>
-        </div>
+        </div> ):(<Navigate to="/login" />)
     );
 }
 

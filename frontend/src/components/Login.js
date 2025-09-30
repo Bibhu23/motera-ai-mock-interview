@@ -4,11 +4,13 @@ import { AppContext } from "../context/Appcontext";
 import "./Login.css"; // Import the CSS file
 import bgImg from "../assets/moterabac.jfif"
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 export default function Login() {
-    const { setUser } = useContext(AppContext);
+    const { setUser,setLogin } = useContext(AppContext);
+    const navigate = useNavigate();
     const [loginForm, setLoginForm] = useState({
         email: "",
-        password: "",
+        password: "",   
     });
 
     const handleLogin = async (e) => {
@@ -26,9 +28,12 @@ export default function Login() {
                 setUser(res.data.user);
             }
             console.log("Login successful", res.data);
-            alert("Login successful");
+            setLogin(true);
+            navigate("/")
         } catch (err) {
+              setLogin(false);
             alert("Login failed: " + (err.response?.data?.message || err.message));
+          
         }
     };
 
