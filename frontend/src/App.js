@@ -8,13 +8,13 @@ import Navbar from './components/Navbar'
 import Footer from './components/footer';
 import Login from './components/Login';
 import BuyCredit from './pages/BuyCredit';
-import ExamPage from './components/ExamPage';
 import Features from './pages/Features';
 import Round1 from './pages/Round1';
 import Round2 from './pages/Round2';
 import LiveVideoInterviewPage from './pages/LiveVideoInterviewPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
+import ExamPage from './pages/ExamPage';
 function App() {
   return (
     <div className="App">
@@ -34,7 +34,6 @@ function App() {
           <Route path='/privacy' element={<PrivacyPolicy />} />
           <Route path='/terms' element={<TermsConditions />} />
         </Routes>
-        <ExamPage />
         <Footer />
       </div>
     </div>

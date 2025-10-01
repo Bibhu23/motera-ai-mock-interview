@@ -11,10 +11,18 @@
     width: 500px;
 }
 
-.text {
+.text h1 {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    color: #ffffff;
+}
+
+.text p {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: #333333;
 }
 
 .button {
@@ -39,6 +47,7 @@
     font-size: 28px;
     margin-bottom: 40px;
     font-weight: bold;
+    color: #ffffff;
 }
 
 .step-distance {
@@ -48,8 +57,18 @@
     flex-wrap: wrap;
 }
 
+.step-distance h3 {
+    color: #0dcaf0;
+}
+
+.step-distance p {
+    color: #333333;
+}
+
+
 .step-style {
     border: 1px solid #ddd;
+    background-color: #FFF2F5;
     border-radius: 12px;
     padding: 20px;
     width: 250px;

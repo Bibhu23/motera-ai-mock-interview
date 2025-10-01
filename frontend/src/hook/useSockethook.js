@@ -53,6 +53,10 @@ export default function useInterviewSocket({ url, onQuestion, onAnswerResult, on
     const prev = useCallback(() => {
         socketRef.current?.emit("prev");
     }, []);
+    const finish = useCallback(() => {
+        socketRef.current?.emit("finish");
+    }, []);
 
-    return { start, submitAnswer, next, prev, connected };
+
+    return { start, submitAnswer, next, prev, finish, connected };
 }

@@ -1,0 +1,120 @@
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import useInterviewSocket from "../hook/useSockethook";
+import "./ExamPage.css";
+
+export default function ExamPage() {
+    const [question, setQuestion] = useState(null);
+    const [qIndex, setQIndex] = useState(0);
+    const [total, setTotal] = useState(0);
+    const [result, setResult] = useState(null);
+    const [summary, setSummary] = useState(null);
+    const [correctCount, setCorrectCount] = useState(0);
+
+    const navigate = useNavigate();
+
+    const handleQuestion = useCallback(({ question, qIndex, total }) => {
+        setQuestion(question);
+        setQIndex(qIndex);
+        setTotal(total);
+        setResult(null);
+    }, []);
+
+    const handleAnswerResult = useCallback((res) => {
+        setResult(res);
+        if (res.isCorrect) setCorrectCount((prev) => prev + 1);
+    }, []);
+
+    const handleFinished = useCallback((sum) => {
+        setSummary(sum);
+    }, []);
+
+    const { start, submitAnswer, next, prev, finish, connected } = useInterviewSocket({
+        url: process.env.REACT_APP_API_URL || "http://localhost:7656",
+        onQuestion: handleQuestion,
+        onAnswerResult: handleAnswerResult,
+        onFinished: handleFinished,
+    });
+
+    useEffect(() => {
+        if (connected) {
+            setCorrectCount(0); // Reset on new exam
+            start({ skills: ["javascript", "nodejs"], total: 5 });
+        }
+    }, [connected, start]);
+
+    if (!connected) return <p>🔌 Connecting...</p>;
+
+    if (summary) {
+        const passed = summary.correct >= 3;
+        return (
+            <div className="summary-box">
+                <h2>{passed ? "🎉 Passed!" : "❌ Not Qualified"}</h2>
+                <p>Correct: {summary.correct}</p>
+                <p>Wrong: {summary.wrong}</p>
+                <p>Total: {summary.total}</p>
+                <button
+                    className={`btn ${passed ? "btn-success" : "btn-danger"}`}
+                    onClick={() => navigate(passed ? "/livevideo" : "/")}
+                >
+                    {passed ? "Go to Live Video Interview" : "Back to Home"}
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="exam-container">
+            <p className="score-live">✅ Correct Answers: {correctCount}</p>
+            <h2>Question {qIndex}/{total}</h2>
+
+            {question && (
+                <div className="question-box">
+                    <p>{question.question}</p>
+                    <div className="options">
+                        {question.options?.map((opt, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => submitAnswer({ qIndex, answer: opt })}
+                                disabled={!!result}
+                            >
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {result && (
+                <div className="result-box">
+                    <p className={result.isCorrect ? "correct" : "wrong"}>
+                        {result.isCorrect ? "✅ Correct!" : "❌ Wrong!"}
+                    </p>
+                    <p>Correct Answer: {result.correctAnswer}</p>
+                    <p>{result.explanation}</p>
+                    <div className="nav-buttons">
+                        <button onClick={prev} disabled={qIndex <= 1}>Prev</button>
+                        {qIndex < total ? (
+                            <button onClick={next}>Next</button>
+                        ) : (
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    finish(); // notify server
+                                    if (correctCount >= 3) {
+                                        navigate("/livevideo");
+                                    } else {
+                                        navigate("/");
+                                    }
+                                }}
+                            >
+                                Finish Test
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+        </div>
+    );
+}

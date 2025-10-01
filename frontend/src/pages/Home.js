@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import './Home.css';
 
 const Home = () => {
-    // Example for Steps (3 steps)
     const steps = [
         {
             title: "Choose a Role or Job Detail",
@@ -23,7 +22,6 @@ const Home = () => {
         },
     ];
 
-    // Example for Rounds (4 rounds)
     const rounds = [
         {
             title: "Resume Shortlist",
@@ -47,10 +45,23 @@ const Home = () => {
         },
     ];
 
-    // Choose which data to display
     const displayData = rounds; // Change to steps to show steps
+    const navigate = useNavigate();
+    const videoRef = useRef(null);
 
-    const navigate = useNavigate()
+    // Auto-play video on mount
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(err => {
+                console.log("Autoplay prevented:", err);
+            });
+        }
+    }, []);
+
+    // Navigate after video ends
+    const handleVideoEnd = () => {
+        navigate("/round1"); // Change this to your target route
+    };
 
     return (
         <>
@@ -65,9 +76,7 @@ const Home = () => {
                 </div>
                 <div className="text">
                     <h1>Motera AI Platform</h1>
-                    <p>
-                        Start Your Interview Journey By Click Start
-                    </p>
+                    <p>Start Your Interview Journey By Click Start</p>
                     <button className="button" onClick={() => navigate("/round1")}>
                         Start
                     </button>
@@ -89,16 +98,23 @@ const Home = () => {
                         </div>
                     ))}
                 </div>
+
                 <div className="video-container">
                     <h2 className="video-title">Demo: 4 Interview Rounds in Action</h2>
-                    <video controls width="600">
+                    <video
+                        ref={videoRef}
+                        controls
+                        width="600"
+                        onEnded={handleVideoEnd} // Auto-navigate after video finishes
+                        autoPlay
+                    >
                         <source src="/motera_video.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                 </div>
-
             </div>
         </>
     );
 };
+
 export default Home;

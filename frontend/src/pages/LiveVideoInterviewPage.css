@@ -1,31 +1,6 @@
 /* .appvide {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 100vw;
-    height: 100vh;
-    background-color: #f0f0f0;
-    gap: 20px;
-}
-
-.appvide {
-    position: relative;
-    width: 640px;
-    height: 480px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-video #interviewVideo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
 }
 
 .appcanvas {

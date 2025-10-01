@@ -1,0 +1,48 @@
+.privacy-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: "Inter", Arial, sans-serif;
+    line-height: 1.6;
+    color: #222;
+    text-align: left;
+}
+
+.privacy-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.privacy-container h2,
+.privacy-container h3,
+.privacy-container p,
+.privacy-container ul {
+    margin: 10px 0;
+    /* Uniform top and bottom margin */
+    padding-left: 0;
+    /* Remove indentation */
+    text-indent: 0;
+    /* No first-line indentation */
+}
+
+.privacy-container ul {
+    list-style: disc;
+    padding-left: 20px;
+    /* only bullet indentation */
+}
+
+.privacy-container strong {
+    color: #000;
+}
+
+.policy-dates {
+    text-align: center;
+    margin: 5px 0;
+}
+
+.support {
+    border: 1px solid black;
+    padding-left: 5px;
+    border-radius: 5px;
+}
