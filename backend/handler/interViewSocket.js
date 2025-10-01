@@ -11,7 +11,6 @@ export default function initInterviewSocket(io) {
             const session = {
                 id: ` ${userId}:${Date.now()}`,
                 userId,
-
                 total,
                 current: 0,
                 questions: [],

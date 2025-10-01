@@ -93,7 +93,7 @@ function LiveVideoInterviewPage() {
             <h1>Face Detection</h1>
             <div className="appvide">
                 <video
-                    id="interviewVideo"   
+                    id="interviewVideo"
                     ref={videoRef}
                     autoPlay
                     muted
