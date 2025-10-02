@@ -129,3 +129,178 @@ video {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+/* Hero Section Enhancements */
+.hero-section {
+    background: linear-gradient(135deg, #0dcaf0 0%, #6610f2 100%);
+    padding: 60px 20px;
+    border-radius: 20px;
+    color: white;
+}
+
+.cta-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.button.secondary {
+    background-color: #333;
+}
+
+/* Shared styling */
+.highlights-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 50px auto;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.highlight-card {
+    padding: 20px 30px;
+    transition: transform 0.2s ease;
+}
+
+.highlight-card:hover {
+    transform: translateY(-5px);
+}
+
+.highlight-card h3 {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+/* Different colors for each card heading */
+.card-1 h3 {
+    color: #0b4cda;
+    /* Blue */
+}
+
+.card-2 h3 {
+    color: #0cea5d;
+    /* Green */
+}
+
+.card-3 h3 {
+    color: hsl(38, 100%, 45%);
+    /* Amber/Yellow */
+}
+
+.card-4 h3 {
+    color: #dc2626;
+    /* Red */
+}
+
+.highlight-card p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Features Section */
+.features-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.features-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.feature-card {
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    width: 250px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-card h3 {
+    margin: 10px 0;
+    color: #0dcaf0;
+}
+
+/* Testimonials */
+.testimonial-section {
+    padding: 60px 20px;
+    background: #f8f8f8;
+    text-align: center;
+}
+
+.testimonial-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.testimonial-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 280px;
+    font-style: italic;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-card span {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* FAQ Section */
+.faq-container {
+    margin: 60px auto;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.faq-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.faq-item {
+    background: #f8f8f8;
+    padding: 15px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.faq-item:hover {
+    background: #ececec;
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.faq-answer {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}

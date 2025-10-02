@@ -11,8 +11,9 @@ const Round2 = () => {
     const [answers, setAnswers] = useState({});
     const navigate = useNavigate();
 
-    const TOTAL_QUESTIONS = 5; // only 5 questions
+    const TOTAL_QUESTIONS = 5;
 
+    // Timer
     useEffect(() => {
         if (timeLeft <= 0) {
             handleExamComplete(score);
@@ -28,33 +29,27 @@ const Round2 = () => {
         return `00:${m}:${s}`;
     };
 
-    const handleSaveAndNext = (ans) => {
-        // save answer
-        setAnswers((prev) => ({ ...prev, [currentQuestion]: ans }));
+    // Save answer & move to next question
+    const handleSaveAndNext = (selectedAnswer, isCorrect) => {
+        setAnswers((prev) => ({
+            ...prev,
+            [currentQuestion]: { answer: selectedAnswer, isCorrect },
+        }));
 
-        // increase score dynamically (only up to 5 questions)
-        if (ans?.isCorrect) {
+        if (isCorrect && !answers[currentQuestion]?.isCorrect) {
             setScore((prev) => prev + 1);
         }
 
-        // move to next
         if (currentQuestion < TOTAL_QUESTIONS - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-        }
-    };
-
-    const handlePrevious = () => {
-        if (currentQuestion > 0) {
-            setCurrentQuestion(currentQuestion - 1);
+            setCurrentQuestion(currentQuestion + 1); // Move question
+        } else {
+            handleExamComplete(score);
         }
     };
 
     const handleExamComplete = (finalScore) => {
-        if (finalScore >= 3) {
-            navigate("/livevideo");
-        } else {
-            navigate("/");
-        }
+        if (finalScore >= 3) navigate("/livevideo");
+        else navigate("/");
     };
 
     if (!login) return <Navigate to="/login" />;
@@ -76,26 +71,9 @@ const Round2 = () => {
                         {/* Question Area */}
                         <ExamPage
                             currentQuestion={currentQuestion}
-                            onSaveAndNext={handleSaveAndNext}
-                            selectedAnswer={answers[currentQuestion]}
+                            onAnswerSelect={handleSaveAndNext}
+                            selectedAnswer={answers[currentQuestion]?.answer}
                         />
-
-                        {/* Navigation buttons */}
-                        <div className="d-flex justify-content-between mt-3">
-                            <button
-                                className="btn btn-secondary"
-                                onClick={handlePrevious}
-                                disabled={currentQuestion === 0}
-                            >
-                                Previous
-                            </button>
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => handleSaveAndNext(answers[currentQuestion])}
-                            >
-                                Save & Next
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -118,7 +96,7 @@ const Round2 = () => {
                     </div>
 
                     <div className="card shadow-sm p-3">
-                        <h6>Reading Comprehension</h6>
+                        <h6>Questions</h6>
                         <div className="d-flex flex-wrap gap-2 mt-2">
                             {Array.from({ length: TOTAL_QUESTIONS }, (_, i) => (
                                 <button

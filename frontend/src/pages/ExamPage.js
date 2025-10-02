@@ -13,6 +13,7 @@ export default function ExamPage() {
 
     const navigate = useNavigate();
 
+    // Update question from server
     const handleQuestion = useCallback(({ question, qIndex, total }) => {
         setQuestion(question);
         setQIndex(qIndex);
@@ -20,6 +21,7 @@ export default function ExamPage() {
         setResult(null);
     }, []);
 
+    // Handle server answer result
     const handleAnswerResult = useCallback((res) => {
         setResult(res);
         if (res.isCorrect) setCorrectCount((prev) => prev + 1);
@@ -38,12 +40,12 @@ export default function ExamPage() {
 
     useEffect(() => {
         if (connected) {
-            setCorrectCount(0); // Reset on new exam
+            setCorrectCount(0);
             start({ skills: ["javascript", "nodejs"], total: 5 });
         }
     }, [connected, start]);
 
-    if (!connected) return <p>🔌 Connecting...</p>;
+    if (!connected) return <p className="exam-container">🔌 Connecting...</p>;
 
     if (summary) {
         const passed = summary.correct >= 3;
@@ -54,7 +56,7 @@ export default function ExamPage() {
                 <p>Wrong: {summary.wrong}</p>
                 <p>Total: {summary.total}</p>
                 <button
-                    className={`btn ${passed ? "btn-success" : "btn-danger"}`}
+                    className={passed ? "btn-success" : "btn-danger"}
                     onClick={() => navigate(passed ? "/livevideo" : "/")}
                 >
                     {passed ? "Go to Live Video Interview" : "Back to Home"}
@@ -66,7 +68,7 @@ export default function ExamPage() {
     return (
         <div className="exam-container">
             <p className="score-live">✅ Correct Answers: {correctCount}</p>
-            <h2>Question {qIndex}/{total}</h2>
+            <h2>Question {qIndex + 1}/{total}</h2>
 
             {question && (
                 <div className="question-box">
@@ -75,9 +77,11 @@ export default function ExamPage() {
                         {question.options?.map((opt, idx) => (
                             <button
                                 key={idx}
+                                className={`option-card ${result?.selected === opt ? "selected" : ""}`}
                                 onClick={() => submitAnswer({ qIndex, answer: opt })}
                                 disabled={!!result}
                             >
+                                <div className="circle"></div>
                                 {opt}
                             </button>
                         ))}
@@ -92,15 +96,17 @@ export default function ExamPage() {
                     </p>
                     <p>Correct Answer: {result.correctAnswer}</p>
                     <p>{result.explanation}</p>
+
                     <div className="nav-buttons">
-                        <button onClick={prev} disabled={qIndex <= 1}>Prev</button>
-                        {qIndex < total ? (
-                            <button onClick={next}>Next</button>
+                        <button onClick={prev} disabled={qIndex === 0}>Prev</button>
+
+                        {qIndex < total - 1 ? (
+                            <button onClick={next}>Save & Next</button>
                         ) : (
                             <button
                                 className="btn btn-primary"
                                 onClick={() => {
-                                    finish(); // notify server
+                                    finish();
                                     if (correctCount >= 3) {
                                         navigate("/livevideo");
                                     } else {
@@ -114,7 +120,6 @@ export default function ExamPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
