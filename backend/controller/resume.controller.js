@@ -1,6 +1,5 @@
 import fs from "fs";
 import { parseResume } from "../service/resumeParserService.js";
-import { handlePayment } from "../middleware/PaymentController.js";
 import User from "../model/userModel.js";
 
 // Controller to handle resume upload
@@ -17,8 +16,9 @@ export const uploadResumeController = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized: User not found" });
         }
 
-        // 3️⃣ Deduct credit
-        const creditBalance = await handlePayment(userId);
+        // 3️⃣ Get current credit balance (credit already deducted in frontend)
+        const user = await User.findById(userId);
+        const creditBalance = user?.creditBalance || 0;
 
         const fileBuffer = fs.readFileSync(req.file.path);
         const base64File = fileBuffer.toString("base64");

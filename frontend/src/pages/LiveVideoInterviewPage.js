@@ -22,7 +22,6 @@ function LiveVideoInterviewPage() {
     requestPermissions();
   }, []);
 
-  // Cleanup stream on unmount
   useEffect(() => {
     return () => {
       if (mediaStream) {
@@ -37,15 +36,12 @@ function LiveVideoInterviewPage() {
     }
   }, [questionIndex, interviewStarted, questions]);
 
-  // Request camera and mic permissions
   const requestPermissions = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        setMediaStream(stream); // Store the stream
+        if (videoRef.current) videoRef.current.srcObject = stream;
+        setMediaStream(stream);
         setPermissionsGranted(true);
       })
       .catch((err) => {
@@ -56,7 +52,6 @@ function LiveVideoInterviewPage() {
       });
   };
 
-  // Start the interview and fetch questions
   const startInterview = async () => {
     if (!permissionsGranted) {
       alert("Please allow camera and microphone access first.");
@@ -64,8 +59,10 @@ function LiveVideoInterviewPage() {
     }
 
     try {
+      // Use resume-based technical questions for the mock interview
       const res = await fetch(
-        `http://localhost:7656/api/gemini/open-ended?limit=${totalQuestions}`
+        `http://localhost:7656/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
+        { credentials: "include" }
       );
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("Invalid questions response");
@@ -78,79 +75,49 @@ function LiveVideoInterviewPage() {
     }
   };
 
-  // Recording logic
+  // ---------------- RECORDING LOGIC ----------------
   const startRecording = () => {
-    const stream = mediaStream || videoRef.current?.srcObject;
-    if (!stream) {
+    if (!mediaStream) {
       alert("No media stream available. Please allow camera and mic.");
       return;
     }
-    const audioTracks = stream.getAudioTracks();
+
+    const audioTracks = mediaStream.getAudioTracks();
     if (!audioTracks || audioTracks.length === 0) {
       alert("No microphone detected or permission denied.");
       return;
     }
 
     const audioStream = new MediaStream([audioTracks[0]]);
-    const mimeCandidates = [
-      "audio/ogg;codecs=opus", // ✅ Put this first
-      "audio/ogg",
-      "audio/mp4",
-      "audio/webm;codecs=opus",
-      "audio/webm",
-    ];
-
-    const buildOptions = () => {
-      for (const type of mimeCandidates) {
-        if (window.MediaRecorder?.isTypeSupported?.(type))
-          return { mimeType: type };
-      }
-      return undefined;
-    };
-
-    const tryCreate = (targetStream, withOptions) => {
-      try {
-        return withOptions
-          ? new window.MediaRecorder(targetStream, buildOptions())
-          : new window.MediaRecorder(targetStream);
-      } catch (_) {
-        return null;
-      }
-    };
-
-    let recorder =
-      // 1) Try full stream no options
-      tryCreate(stream, false) ||
-      // 2) Try full stream with options
-      tryCreate(stream, true) ||
-      // 3) Try audio-only no options
-      tryCreate(audioStream, false) ||
-      // 4) Try audio-only with options
-      tryCreate(audioStream, true);
-
-    if (!recorder) {
-      console.error(
-        "MediaRecorder not supported for provided streams/mime types"
-      );
+    let recorder;
+    try {
+      recorder = new MediaRecorder(audioStream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+    } catch (err) {
+      console.error("MediaRecorder not supported:", err);
       alert(
-        "Recording is not supported in this browser. Please try latest Chrome/Edge."
+        "Recording is not supported in this browser. Use latest Chrome/Edge."
       );
       return;
     }
 
     setRecordedChunks([]);
     recorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0)
+      if (e.data && e.data.size > 0) {
         setRecordedChunks((prev) => [...prev, e.data]);
+      }
     };
     recorder.onstop = handleUpload;
+
     try {
       recorder.start();
     } catch (err) {
-      console.error("Failed to start recorder:", err);
+      console.error("Failed to start recording:", err);
       alert("Failed to start recording. Please retry.");
       return;
     }
+
     setMediaRecorder(recorder);
     setRecording(true);
   };
@@ -162,52 +129,49 @@ function LiveVideoInterviewPage() {
     }
   };
 
-  // Upload video answer to backend
-// handleUpload function
-const handleUpload = async () => {
-  if (!recordedChunks || recordedChunks.length === 0) return;
+  // ---------------- UPLOAD & TRANSCRIBE ----------------
+  const handleUpload = async () => {
+    if (!recordedChunks || recordedChunks.length === 0) return;
 
-  const chunkType = recordedChunks[0].type || "video/mp4";
-  const blob = new Blob(recordedChunks, { type: chunkType });
+    const blob = new Blob(recordedChunks, { type: "audio/webm" });
+    const formData = new FormData();
+    formData.append("audio", blob, "answer.webm");
+    formData.append("question", question);
 
-  const formData = new FormData();
-  formData.append("audio", blob, `answer.${chunkType.includes("mp4") ? "mp4" : "webm"}`);
-  formData.append("question", question);
+    try {
+      // Transcribe
+      const res = await fetch("http://localhost:7656/api/transcribe", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
 
-  try {
-    const res = await fetch("http://localhost:7656/api/transcribe", {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-    });
+      const data = await res.json();
+      if (!res.ok) {
+        setFeedback({ score: 0, feedback: data?.message || "Server error" });
+        return;
+      }
 
-    const data = await res.json();
-    if (!res.ok) {
-      setFeedback({ score: 0, feedback: data?.message || "Server error" });
-      return;
+      // Send transcript + question to get feedback
+      const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript: data.transcript, question }),
+      });
+
+      const feedbackData = await feedbackRes.json();
+      setFeedback(feedbackData.feedback);
+      const numericScore = Number(feedbackData.feedback?.score || 0);
+      setScoreTotal((prev) => prev + numericScore);
+    } catch (err) {
+      console.error(err);
+      setFeedback({ score: 0, feedback: "Error analyzing answer" });
     }
-
-    // Now send transcript + question to feedback
-    const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transcript: data.transcript, question }),
-    });
-    const feedbackData = await feedbackRes.json();
-    setFeedback(feedbackData.feedback);
-    const numericScore = Number(feedbackData.feedback?.score || 0);
-    setScoreTotal((prev) => prev + numericScore);
-  } catch (err) {
-    console.error(err);
-    setFeedback({ score: 0, feedback: "Error analyzing answer" });
-  }
-};
-
+  };
 
   const nextQuestion = () => {
     setFeedback(null);
     if (questionIndex + 1 >= totalQuestions) {
-      // final summary
       const maxScore = totalQuestions * 10;
       const pct = Math.round((scoreTotal / maxScore) * 100);
       alert(`Interview finished! Overall correctness: ${pct}%`);
@@ -234,13 +198,14 @@ const handleUpload = async () => {
 
       {permissionsGranted && !interviewStarted && (
         <div className="start-section">
-          <h2>Ready to Start Interview?</h2>
+          <h2>Ready to Start Mock Interview?</h2>
           <p>
-            You will be asked {totalQuestions} technical questions. Record your
-            answers and get AI feedback.
+            You will be asked {totalQuestions} technical questions based on your resume skills. 
+            Record your answers and get AI feedback.
           </p>
           <p>✅ Camera and microphone are ready</p>
-          <button onClick={startInterview}>Start Interview</button>
+          <p>📄 Questions will be personalized based on your uploaded resume</p>
+          <button onClick={startInterview}>Start Mock Interview</button>
         </div>
       )}
 

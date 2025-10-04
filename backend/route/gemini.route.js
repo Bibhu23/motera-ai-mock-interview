@@ -1,6 +1,8 @@
 import express from "express";
 
-import { getGeminiQuestions, getOpenEndedQuestions } from "../service/GeminiService.js";
+import { getGeminiQuestions, getOpenEndedQuestions, getMCQQuestionsBasedOnResume, getTechnicalQuestionsBasedOnResume } from "../service/GeminiService.js";
+import User from "../model/userModel.js";
+import authMiddleware from "../middleware/Auth.js";
 
 const router = express.Router();
 
@@ -25,6 +27,50 @@ router.get("/open-ended", async (req, res) => {
     } catch (err) {
         console.error("/open-ended error:", err.message);
         res.status(500).json({ error: "Failed to generate open-ended questions" });
+    }
+});
+
+// Route: Generate MCQ questions based on user's resume skills
+router.get("/mcq-based-on-resume", authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized: User not found" });
+        }
+
+        const limit = parseInt(req.query.limit) || 5;
+        
+        // Get user's skills from database
+        const user = await User.findById(userId);
+        const skills = user?.skills || [];
+        
+        const questions = await getMCQQuestionsBasedOnResume(skills, limit);
+        res.json(questions);
+    } catch (err) {
+        console.error("/mcq-based-on-resume error:", err.message);
+        res.status(500).json({ error: "Failed to generate MCQ questions based on resume" });
+    }
+});
+
+// Route: Generate technical questions based on user's resume skills
+router.get("/technical-based-on-resume", authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized: User not found" });
+        }
+
+        const limit = parseInt(req.query.limit) || 10;
+        
+        // Get user's skills from database
+        const user = await User.findById(userId);
+        const skills = user?.skills || [];
+        
+        const questions = await getTechnicalQuestionsBasedOnResume(skills, limit);
+        res.json(questions);
+    } catch (err) {
+        console.error("/technical-based-on-resume error:", err.message);
+        res.status(500).json({ error: "Failed to generate technical questions based on resume" });
     }
 });
 

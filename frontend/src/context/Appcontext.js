@@ -44,12 +44,15 @@ const AppContextProvider = (props) => {
       if (data.success) {
         setCredit(data.creditBalance);
         toast.success(`Credit used! Remaining: ${data.creditBalance}`);
+        return { success: true, creditBalance: data.creditBalance };
       } else {
         toast.error(data.message);
+        return { success: false, message: data.message };
       }
     } catch (err) {
       console.error(err);
       toast.error("Error using credit");
+      return { success: false, message: "Error using credit" };
     }
   };
 
