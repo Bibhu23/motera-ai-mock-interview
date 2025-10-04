@@ -13,7 +13,7 @@ import initInterviewSocket from "./handler/interViewSocket.js";
 // import {initLiveInterviewSocket} from "./handler/LiveinterviewSocket.js"
 import { createServer } from "http";
 import resumeRouter from "./route/resume.route.js"
-// import liveInterviewRouter from "./route/interview.route.js";;
+import liveInterviewRouter from "./route/interview.route.js";;
 const port = process.env.PORT || 7656;
 const app = express();
 //handling cors error
@@ -30,7 +30,7 @@ app.use("/api/payment", paymentrouter);
 app.use("/api/gemini", geminiRoutes);
 // app.use("/api/interview", interViewRouter);
 app.use("/api", resumeRouter);
-// app.use("/api", liveInterviewRouter);
+app.use("/api", liveInterviewRouter);
 
 const startServer = async () => {
     try {
