@@ -14,6 +14,7 @@ import initInterviewSocket from "./handler/interViewSocket.js";
 import { createServer } from "http";
 import resumeRouter from "./route/resume.route.js"
 import liveInterviewRouter from "./route/interview.route.js";;
+import userRoundsRouter from "./route/userRounds.route.js"
 const port = process.env.PORT || 7656;
 const app = express();
 //handling cors error
@@ -31,6 +32,8 @@ app.use("/api/gemini", geminiRoutes);
 // app.use("/api/interview", interViewRouter);
 app.use("/api", resumeRouter);
 app.use("/api", liveInterviewRouter);
+app.use("/user/api/v1", userRoundsRouter);
+
 
 const startServer = async () => {
     try {

@@ -117,9 +117,7 @@ const Home = () => {
                         ref={videoRef}
                         controls
                         width="600"
-                        onEnded={handleVideoEnd}
-                        autoPlay
-                    >
+                        onEnded={handleVideoEnd}                    >
                         <source src="/motera_video.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>

@@ -1,193 +1,181 @@
-// npm install chart.js
-// npm install chartjs-plugin-datalabels use for cal %
-
-import React, { useEffect, useRef } from "react";
+// npm install chart.js chartjs-plugin-datalabels axios
+import React, { useEffect, useRef, useState, useContext } from "react";
 import Sidebar from "../components/Sidebar";
-import "./Dashboard.css";
 import DashboardNavbar from "./DashboardNavbar";
+import "./Dashboard.css";
 import { Chart } from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { useContext } from "react";
 import { AppContext } from "../context/Appcontext";
 import { Navigate } from "react-router-dom";
-function Dashboard() {
-    const user = { name: "Bibhu", avatar: "" };
+import axios from "axios";
 
+function Dashboard() {
+    const { login } = useContext(AppContext);
     const barChartRef = useRef(null);
     const pieChartRef = useRef(null);
     const resultsChartRef = useRef(null);
-    const {login} = useContext(AppContext);
+    const [interviewRounds, setInterviewRounds] = useState([]);
 
+    // Fetch rounds dynamically from backend
     useEffect(() => {
-        // === BAR CHART (with X and Y axis) ===
-        const barCtx = barChartRef.current.getContext("2d");
-        if (Chart.getChart(barCtx)) {
-            Chart.getChart(barCtx).destroy();
+        async function fetchRounds() {
+            try {
+                const res = await axios.get("http://localhost:7656/user/api/v1/interview-rounds", { withCredentials: true });
+                setInterviewRounds(res.data.rounds);
+            } catch (err) {
+                console.error("Failed to fetch rounds:", err.response?.data || err.message);
+            }
         }
+
+        fetchRounds();
+    }, []);
+
+    // Compute progress & average
+    const totalRounds = interviewRounds.length;
+    const completedRounds = interviewRounds.filter(r => r.status === "Completed").length;
+    const avgScore = interviewRounds.filter(r => r.score !== null && r.score !== undefined).length > 0
+        ? Math.round(interviewRounds.filter(r => r.score !== null && r.score !== undefined).reduce((sum, r) => sum + r.score, 0) / completedRounds)
+        : 0;
+
+    // Charts
+    useEffect(() => {
+        if (!interviewRounds.length) return;
+
+        // === Bar Chart ===
+        const barCtx = barChartRef.current.getContext("2d");
+        if (Chart.getChart(barCtx)) Chart.getChart(barCtx).destroy();
 
         new Chart(barCtx, {
             type: "bar",
             data: {
-                labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+                labels: interviewRounds.map(r => r.round),
                 datasets: [
                     {
-                        label: "Interviews Scheduled",
-                        data: [5, 8, 3, 6, 4],
-                        backgroundColor: "rgba(75, 192, 192, 0.6)",
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        borderWidth: 1,
-                    },
-                ],
+                        label: "Score",
+                        data: interviewRounds.map(r => r.score || 0),
+                        backgroundColor: interviewRounds.map(r =>
+                            r.status === "Completed" ? "rgba(54, 162, 235, 0.6)" : "rgba(200,200,200,0.3)"
+                        ),
+                        borderColor: interviewRounds.map(r =>
+                            r.status === "Completed" ? "rgba(54, 162, 235, 1)" : "rgba(200,200,200,0.5)"
+                        ),
+                        borderWidth: 1
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 plugins: {
                     legend: { position: "top" },
-                    title: { display: true, text: "Weekly Interview Analytics" },
+                    title: { display: true, text: "Scores per Interview Round" }
                 },
                 scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "Days of the Week",
-                        },
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: "Number of Interviews",
-                        },
-                    },
-                },
-            },
+                    y: { beginAtZero: true, title: { display: true, text: "Score" } }
+                }
+            }
         });
 
-        // === PIE CHART (Circle) ===
+        // === Pie Chart ===
         const pieCtx = pieChartRef.current.getContext("2d");
-        if (Chart.getChart(pieCtx)) {
-            Chart.getChart(pieCtx).destroy();
-        }
+        if (Chart.getChart(pieCtx)) Chart.getChart(pieCtx).destroy();
+
+        const statusCounts = {
+            Completed: completedRounds,
+            Pending: totalRounds - completedRounds
+        };
 
         new Chart(pieCtx, {
             type: "doughnut",
             data: {
-                labels: ["Passed", "Failed", "Pending"],
+                labels: ["Completed", "Pending"],
                 datasets: [
                     {
-                        label: "Interview Results",
-                        data: [12, 5, 3],
-                        backgroundColor: [
-                            "rgba(54, 162, 235, 0.6)",
-                            "rgba(255, 99, 132, 0.6)",
-                            "rgba(255, 206, 86, 0.6)",
-                        ],
-                        borderColor: [
-                            "rgba(54, 162, 235, 1)",
-                            "rgba(255, 99, 132, 1)",
-                            "rgba(255, 206, 86, 1)",
-                        ],
-                        borderWidth: 1,
-                    },
-                ],
+                        data: [statusCounts.Completed, statusCounts.Pending],
+                        backgroundColor: ["rgba(54, 162, 235, 0.6)", "rgba(255, 206, 86, 0.6)"],
+                        borderColor: ["rgba(54, 162, 235, 1)", "rgba(255, 206, 86, 1)"],
+                        borderWidth: 1
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 plugins: {
                     legend: { position: "bottom" },
-                    title: { display: true, text: "Interview Results Distribution" },
+                    title: { display: true, text: "Interview Status Distribution" },
                     datalabels: {
                         color: "#fff",
-                        font: {
-                            weight: "bold",
-                            size: 14,
-                        },
+                        font: { weight: "bold", size: 14 },
                         formatter: (value, context) => {
-                            let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
-                            return percentage;
-                        },
-                    },
-                },
+                            const sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            return ((value / sum) * 100).toFixed(1) + "%";
+                        }
+                    }
+                }
             },
-            plugins: [ChartDataLabels], // ← attach plugin here
+            plugins: [ChartDataLabels]
         });
 
-        // === INTERVIEW RESULTS CHART (X-Y axes) ===
+        // === Results Chart (Bar) ===
         const resultsCtx = resultsChartRef.current.getContext("2d");
         if (Chart.getChart(resultsCtx)) Chart.getChart(resultsCtx).destroy();
 
         new Chart(resultsCtx, {
-            type: "bar", // or "line" if you prefer
+            type: "bar",
             data: {
-                labels: ["Mon", "Tue", "Wed", "Thu", "Fri"], // X-axis
+                labels: interviewRounds.map(r => r.round),
                 datasets: [
                     {
-                        label: "Passed",
-                        data: [5, 3, 4, 6, 2],
-                        backgroundColor: "rgba(54, 162, 235, 0.6)",
-                        borderColor: "rgba(54, 162, 235, 1)",
-                        borderWidth: 1,
-                    },
-                    {
-                        label: "Failed",
-                        data: [2, 1, 3, 2, 2],
-                        backgroundColor: "rgba(255, 99, 132, 0.6)",
-                        borderColor: "rgba(255, 99, 132, 1)",
-                        borderWidth: 1,
-                    },
-                    {
-                        label: "Pending",
-                        data: [1, 2, 0, 1, 1],
-                        backgroundColor: "rgba(255, 206, 86, 0.6)",
-                        borderColor: "rgba(255, 206, 86, 1)",
-                        borderWidth: 1,
-                    },
-                ],
+                        label: "Score",
+                        data: interviewRounds.map(r => r.score || 0),
+                        backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: "top" },
-                    title: { display: true, text: "Interview Results Over Days" },
+                    legend: { display: false },
+                    title: { display: true, text: "Interview Results" }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: "Number of Candidates" },
-                    },
-                    x: {
-                        title: { display: true, text: "Days of the Week" },
-                    },
-                },
-            },
+                    y: { beginAtZero: true, title: { display: true, text: "Score" } }
+                }
+            }
         });
 
+    }, [interviewRounds]);
 
-    }, []);
+    if (!login) return <Navigate to="/login" />;
+
     return (
-        login ?(
         <div className="dashboard">
             <Sidebar />
-
             <div className="main">
-                <DashboardNavbar user={user} />
+                <DashboardNavbar user={{ name: "Bibhu", avatar: "" }} />
 
+                {/* Cards */}
                 <div className="dashboard-content">
+                    {interviewRounds.map((r, idx) => (
+                        <div className="card" key={idx}>
+                            <div>{r.round}</div>
+                            <h1>{r.score !== null ? r.score + "%" : "Pending"}</h1>
+                            <p>{r.date ? new Date(r.date).toLocaleDateString() : "-"}</p>
+                        </div>
+                    ))}
+
                     <div className="card">
-                        <div>📋 Interviews Taken</div>
-                        <h1>3</h1>
+                        <div>Overall Progress</div>
+                        <h1>{Math.round((completedRounds / totalRounds) * 100)}%</h1>
+                        <p>{completedRounds} of {totalRounds} rounds completed</p>
                     </div>
+
                     <div className="card">
-                        <div>⭐ Avg Score</div>
-                        <h1>85%</h1>
-                    </div>
-                    <div className="card">
-                        <div>⏱ Last Interview</div>
-                        <h1>2 days ago</h1>
+                        <div>Average Score</div>
+                        <h1>{avgScore}%</h1>
                     </div>
                 </div>
-
 
                 {/* Charts */}
                 <div className="bar-chart-container">
@@ -202,9 +190,8 @@ function Dashboard() {
                         <canvas ref={resultsChartRef}></canvas>
                     </div>
                 </div>
-
             </div>
-        </div> ):(<Navigate to="/login" />)
+        </div>
     );
 }
 

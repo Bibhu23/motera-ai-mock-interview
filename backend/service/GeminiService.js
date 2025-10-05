@@ -45,7 +45,7 @@ Evaluate concisely and return JSON only: {"score": number, "feedback": "text"}. 
         // Try parse JSON block
         const jsonMatch = raw?.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-            try { return JSON.parse(jsonMatch[0]); } catch {}
+            try { return JSON.parse(jsonMatch[0]); } catch { }
         }
         return { score: 0, feedback: raw || "No feedback generated" };
     } catch (err) {

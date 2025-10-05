@@ -15,6 +15,7 @@ import LiveVideoInterviewPage from './pages/LiveVideoInterviewPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
 import ExamPage from './pages/ExamPage';
+import FaceDetectionPage from './pages/FaceDetectionPage';
 function App() {
   return (
     <div className="App">
@@ -30,6 +31,7 @@ function App() {
           <Route path='/round1' element={<Round1 />} />
           <Route path='/round2' element={<Round2 />} />
           <Route path='/livevideo' element={<LiveVideoInterviewPage />} />
+          {/* <Route path='/livevideo' element={<FaceDetectionPage />} /> */}
           <Route path='/round2' element={<ExamPage />} />
           <Route path='/privacy' element={<PrivacyPolicy />} />
           <Route path='/terms' element={<TermsConditions />} />

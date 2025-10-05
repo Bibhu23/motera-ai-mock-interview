@@ -1,21 +1,3 @@
-/* .appvide {
-    display: flex;
-    align-items: center;
-}
-
-.appcanvas {
-    position: absolute;
-    top: 100px
-}
-
-.myapp {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-} */
 .myapp {
     display: flex;
     flex-direction: column;
@@ -31,27 +13,31 @@
     position: relative;
     width: 640px;
     height: 480px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: black;
+    /* helps debugging video container */
 }
 
-video #interviewVideo {
+#interviewVideo {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 10px;
 }
 
-.feedback-section button {
-    margin-top: 12px;
-    padding: 8px 12px;
+.appcanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 640px;
+    height: 480px;
+    pointer-events: none;
 }
 
-.permission-section, .start-section {
+.permission-section,
+.start-section {
     text-align: center;
     padding: 20px;
     background: white;
@@ -60,7 +46,8 @@ video #interviewVideo {
     margin: 20px;
 }
 
-.permission-section button, .start-section button {
+.permission-section button,
+.start-section button {
     background: #007bff;
     color: white;
     border: none;
@@ -71,15 +58,12 @@ video #interviewVideo {
     margin-top: 10px;
 }
 
-.permission-section button:hover, .start-section button:hover {
+.permission-section button:hover,
+.start-section button:hover {
     background: #0056b3;
 }
 
-.appcanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
+.feedback-section button {
+    margin-top: 12px;
+    padding: 8px 12px;
 }
