@@ -1,0 +1,237 @@
+/* Main layout */
+.profile-page {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #c1b6ff, #a0e7e5);
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 20px 40px;
+}
+
+/* Header */
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profile-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.profile-header p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Upload Box */
+.upload-box {
+    border: 2px dashed #666;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease-in-out;
+}
+
+.upload-box:hover {
+    border-color: #5c5cff;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+}
+
+.upload-box small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.85rem;
+}
+
+/* Progress Bar */
+.progress-bar {
+    margin-bottom: 30px;
+}
+
+/* Profile Details Box */
+.profile-details-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-details-box h4 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    /* ensures label takes full width */
+    text-align: left;
+    /* left-align text */
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+/* Form Row */
+/* Horizontal rows for main fields */
+.form-row {
+    display: flex;
+    gap: 20px;
+    /* space between fields */
+    flex-wrap: wrap;
+    /* wrap on small screens */
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    /* each field takes equal space */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Vertical fields (summary, skills, hobbies) remain standard */
+/* All input and textarea fields */
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #5c5cff;
+    /* visible border */
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+/* Focus effect */
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #3f3fff;
+    box-shadow: 0 0 5px rgba(92, 92, 255, 0.3);
+}
+
+/* Horizontal rows (no extra changes needed, fields inherit border) */
+.form-row .form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 5px;
+}
+
+/* Textarea resize disabled for consistency */
+.form-group textarea {
+    resize: none;
+}
+
+.array-group {
+    margin-bottom: 25px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.array-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.array-header h5 {
+    font-weight: 600;
+    margin: 0;
+}
+
+.array-item {
+    position: relative;
+    padding: 10px 0;
+    border-bottom: 1px dashed #ccc;
+    margin-bottom: 10px;
+}
+
+.array-item:last-child {
+    border-bottom: none;
+}
+
+.add-btn,
+.remove-btn {
+    background-color: #5c5cff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.add-btn:hover,
+.remove-btn:hover {
+    background-color: #3f3fff;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 5px 8px;
+    font-size: 0.9rem;
+}
+
+.array-item .form-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.array-item .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Save button */
+.btn-save {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #5c5cff;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.message {
+    margin-top: 10px;
+    color: green;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+}

@@ -11,7 +11,7 @@ router.post("/transcribe", upload.single("audio"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
     console.log(req.file);
-    
+
 
     // Validate mimetype
     if (!req.file.mimetype.startsWith("audio/") && !req.file.mimetype.startsWith("video/")) {
@@ -46,5 +46,4 @@ router.post("/feedback", express.json(), async (req, res) => {
     res.status(500).json({ error: "Feedback generation failed", details: err.message });
   }
 });
-
 export default router;

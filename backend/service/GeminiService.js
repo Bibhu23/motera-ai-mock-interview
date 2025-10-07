@@ -1,20 +1,26 @@
 import axios from "axios";
 
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+// it basically call the gemini API and return the text response
 
 async function callGemini(prompt) {
     if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
     const body = { contents: [{ parts: [{ text: prompt }] }] };
 
-    const res = await axios.post(GEMINI_URL, body, {
-        headers: {
-            "Content-Type": "application/json",
+    try {
+        const res = await axios.post(GEMINI_URL, body, {
+            headers: {
+                "Content-Type": "application/json",
 
-            // Use API key header (not Bearer) per Gemini API
-            "X-goog-api-key": process.env.GEMINI_API_KEY,
-        },
-        timeout: 40000,
-    });
+                // Use API key header (not Bearer) per Gemini API
+                "X-goog-api-key": process.env.GEMINI_API_KEY,
+            },
+            timeout: 40000,
+        });
+    } catch (error) {
+        throw new Error("Gemini API error: " + (error.response?.data || error.message));
+
+    }
 
     const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     return text?.trim();
@@ -36,10 +42,28 @@ export async function evaluateAnswer(prompt) {
 }
 export async function getFeedback(question, answer) {
     try {
-        const prompt = `You are an experienced technical interviewer.
+        const prompt = `
+You are a senior technical interviewer evaluating a candidate's answer.
+
 Question: "${question}"
-Candidate answer: "${answer}"
-Evaluate concisely and return JSON only: {"score": number, "feedback": "text"}. Score must be 1-10.`;
+Candidate's Answer: "${answer}"
+
+Your job:
+1. Analyze the answer based on correctness, clarity, and completeness.
+2. Provide constructive, professional feedback.
+3. Return ONLY a JSON object in the following exact format — no extra text.
+
+{
+  "score": <number between 1 and 10>,
+  "feedback": "<short, specific explanation of strengths and areas for improvement>"
+}
+
+Guidelines:
+- 10 = perfect answer, 5 = partially correct, 1 = mostly incorrect.
+- Keep feedback under 3 sentences.
+- Do NOT include any text outside the JSON object.
+`;
+
 
         const raw = await callGemini(prompt);
         // Try parse JSON block
@@ -97,7 +121,7 @@ Return ONLY a valid JSON array with this exact shape:
   }
 ]
 Make questions relevant to the skills mentioned. Include 4 options (a, b, c, d) and provide clear explanations.`;
-    
+
     let raw;
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
@@ -113,12 +137,13 @@ Make questions relevant to the skills mentioned. Include 4 options (a, b, c, d) 
             await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
         }
     }
-    
+    //converting into json 
     const jsonMatch = raw?.match(/\[[\s\S]*\]/);
+    //parsing json data
     if (jsonMatch) {
         try { return JSON.parse(jsonMatch[0]); } catch { /* fallthrough */ }
     }
-    
+
     // Fallback questions based on common skills
     const fallback = [
         {
@@ -156,52 +181,81 @@ Make questions relevant to the skills mentioned. Include 4 options (a, b, c, d) 
 }
 
 // Generate technical questions based on resume skills
-export async function getTechnicalQuestionsBasedOnResume(skills = [], limit = 10) {
-    const skillsText = skills.length > 0 ? skills.join(", ") : "general programming";
-    const prompt = `Generate ${limit} technical interview questions based on these skills: ${skillsText}.
-Return ONLY a valid JSON array with this exact shape:
-[
-  { "question": "Explain how you would implement authentication in a Node.js application." },
-  { "question": "Describe the difference between SQL and NoSQL databases." }
-]
-Make questions relevant to the skills mentioned. Focus on practical implementation and problem-solving.`;
-    
-    let raw;
-    for (let attempt = 0; attempt < 3; attempt++) {
+// Safe Gemini call with retries
+async function safeCallGemini(prompt, maxAttempts = 3) {
+    const baseDelay = 500; // milliseconds
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
-            raw = await callGemini(prompt);
-            break;
+            return await callGemini(prompt);
         } catch (err) {
-            const isLast = attempt === 2;
-            if (isLast) {
-                console.error("getTechnicalQuestionsBasedOnResume failed:", err.response?.data || err.message);
-                raw = null;
-                break;
-            }
-            await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+            const isLast = attempt === maxAttempts - 1;
+            const status = err.response?.status;
+
+            // Don't retry for client errors
+            if (status && status >= 400 && status < 500) throw err;
+
+            if (isLast) throw err;
+
+            const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
+            console.warn(`⚠️ Attempt ${attempt + 1} failed. Retrying in ${Math.round(delay)}ms...`);
+            await new Promise(r => setTimeout(r, delay));
         }
     }
-    
-    const jsonMatch = raw?.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-        try { return JSON.parse(jsonMatch[0]); } catch { /* fallthrough */ }
-    }
-    
-    // Fallback technical questions
-    const fallback = [
-        { question: "Explain how you would implement authentication in a Node.js application." },
-        { question: "Describe the difference between SQL and NoSQL databases." },
-        { question: "How would you optimize a slow React component?" },
-        { question: "Explain the concept of closures in JavaScript." },
-        { question: "How would you handle errors in an Express.js application?" },
-        { question: "Describe the REST API principles." },
-        { question: "How would you implement file upload functionality securely?" },
-        { question: "Explain the concept of middleware in web applications." },
-        { question: "How would you test a React component?" },
-        { question: "Describe the process of deploying a Node.js application." }
-    ];
-    return fallback.slice(0, limit);
 }
+
+// Main function: get technical questions with optional feedback
+export async function getTechnicalQuestionsBasedOnResume(skills = [], limit = 10) {
+    const skillsText = skills.length > 0 ? skills.join(", ") : "general programming";
+
+    const prompt = `You are an expert technical interviewer.
+Generate ${limit} technical interview questions based on these skills: ${skillsText}.
+Return ONLY a valid JSON array in this exact shape:
+[
+  { "question": "Explain how you would implement authentication in a Node.js application.", "feedback": "..." },
+  { "question": "Describe the difference between SQL and NoSQL databases.", "feedback": "..." }
+]
+Focus on practical implementation, problem-solving, and provide short hints or feedback for each question.`;
+
+    let raw;
+    try {
+        console.log(`🧠 Calling Gemini to generate technical questions...`);
+        raw = await safeCallGemini(prompt);
+    } catch (err) {
+        console.error("🚨 Gemini call failed:", err.response?.data || err.message);
+        raw = null;
+    }
+
+    // Try parsing JSON from Gemini response
+    const jsonMatch = raw?.match(/\[[\s\S]*\]/);
+    let questions;
+    if (jsonMatch) {
+        try {
+            questions = JSON.parse(jsonMatch[0]);
+        } catch {
+            console.warn("⚠️ Failed to parse Gemini response as JSON");
+        }
+    }
+
+    // Fallback technical questions with feedback
+    if (!questions) {
+        questions = [
+            { question: "Explain how you would implement authentication in a Node.js application.", feedback: "Consider using JWT, bcrypt for passwords, and middleware to protect routes." },
+            { question: "Describe the difference between SQL and NoSQL databases.", feedback: "SQL = relational, structured; NoSQL = non-relational, flexible schema." },
+            { question: "How would you optimize a slow React component?", feedback: "Use memoization, React.memo, and avoid unnecessary re-renders." },
+            { question: "Explain the concept of closures in JavaScript.", feedback: "Closures allow functions to access variables from their outer scope even after the outer function has returned." },
+            { question: "How would you handle errors in an Express.js application?", feedback: "Use middleware for centralized error handling and proper status codes." },
+            { question: "Describe the REST API principles.", feedback: "Use proper HTTP methods, statelessness, and resource-based endpoints." },
+            { question: "How would you implement file upload functionality securely?", feedback: "Validate file types, use size limits, and store safely outside public directories." },
+            { question: "Explain the concept of middleware in web applications.", feedback: "Middleware functions process requests before reaching route handlers or responses." },
+            { question: "How would you test a React component?", feedback: "Use unit testing with Jest and React Testing Library for rendering, events, and state." },
+            { question: "Describe the process of deploying a Node.js application.", feedback: "Include build, environment setup, process manager (like PM2), and monitoring." }
+        ];
+    }
+
+    // Return only up to the requested limit
+    return questions.slice(0, limit);
+}
+
 
 // Generate open-ended, general technical interview questions (no options)
 export async function getOpenEndedQuestions(topic = "general technical", limit = 15) {
@@ -211,7 +265,7 @@ Return ONLY a valid JSON array with this exact shape:
   { "question": "..." },
   { "question": "..." }
 ]
-Do not include answers, options, or explanations.`;
+Do not include answers, options, `;
     // retry up to 3 times for transient failures (e.g., 503/timeouts)
     let raw;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -251,5 +305,75 @@ Do not include answers, options, or explanations.`;
         { question: "How do you structure feature flags and rollbacks in production?" },
         { question: "Describe your approach to database migrations in zero-downtime deploys." }
     ];
+    return fallback.slice(0, limit);
+}
+
+export async function getHrQuestionsBased(limit = 10) {
+    // Construct a prompt that asks for scenario-based HR questions
+    const prompt = `You are an experienced HR interviewer.
+Generate ${limit} scenario-based HR interview questions for candidates.
+Return ONLY a valid JSON array with this exact shape:
+[
+  { "question": "Why should we hire you?" },
+  { "question": "Tell me about a time you faced a conflict at work and how you handled it." },
+  { "question": "Where do you see yourself in 5 years?" }
+]
+Include questions that cover:
+1. Conflict resolution
+2. Teamwork and collaboration
+3. Leadership potential
+4. Problem-solving in real work scenarios
+5. Adaptability and learning
+Provide short feedback for each question to help candidates improve.
+Do not include answers. Return only JSON.`;
+
+    let raw;
+    const baseDelay = 500; // for retry backoff
+
+    // Retry logic in case of transient API failures
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            console.log(`🧠 Attempt ${attempt + 1}/3 to get HR questions...`);
+            raw = await callGemini(prompt);
+            break;
+        } catch (err) {
+            const isLast = attempt === 2;
+            if (isLast) {
+                console.error("🚨 getHrQuestions failed:", err.response?.data || err.message);
+                raw = null;
+                break;
+            }
+            // Exponential backoff + jitter
+            const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
+            console.warn(`⚠️ Attempt ${attempt + 1} failed. Retrying in ${Math.round(delay)}ms...`);
+            await new Promise(r => setTimeout(r, delay));
+        }
+    }
+
+    // Try to parse JSON array from response
+    const jsonMatch = raw?.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+        try {
+            return JSON.parse(jsonMatch[0]);
+        } catch {
+
+            console.warn("⚠️ Failed to parse Gemini response as JSON");
+        }
+    }
+
+    // Fallback HR questions if AI fails
+    const fallback = [
+        { question: "Why should we hire you?" },
+        { question: "Tell me about a time you faced a conflict at work and how you handled it." },
+        { question: "Where do you see yourself in 5 years?" },
+        { question: "Describe a situation where you had to work under pressure." },
+        { question: "Give an example of a time you took initiative to solve a problem." },
+        { question: "Tell me about a mistake you made and what you learned from it." },
+        { question: "How do you handle feedback or criticism?" },
+        { question: "Describe a time you worked effectively as part of a team." },
+        { question: "Tell me about a project you led successfully." },
+        { question: "How do you prioritize tasks when faced with multiple deadlines?" }
+    ];
+
     return fallback.slice(0, limit);
 }

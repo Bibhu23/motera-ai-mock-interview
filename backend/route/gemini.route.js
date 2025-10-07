@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getGeminiQuestions, getOpenEndedQuestions, getMCQQuestionsBasedOnResume, getTechnicalQuestionsBasedOnResume } from "../service/GeminiService.js";
+import { getGeminiQuestions, getOpenEndedQuestions, getMCQQuestionsBasedOnResume, getTechnicalQuestionsBasedOnResume, getHrQuestionsBased } from "../service/GeminiService.js";
 import User from "../model/userModel.js";
 import authMiddleware from "../middleware/Auth.js";
 
@@ -13,6 +13,8 @@ router.get("/questions/:section", async (req, res) => {
         const questions = await getGeminiQuestions(section, limit);
         res.json(questions);
     } catch (err) {
+        console.log("/questions error:", err.message);
+
         res.status(500).json({ error: "Failed to generate questions" });
     }
 });
@@ -39,11 +41,11 @@ router.get("/mcq-based-on-resume", authMiddleware, async (req, res) => {
         }
 
         const limit = parseInt(req.query.limit) || 5;
-        
+
         // Get user's skills from database
         const user = await User.findById(userId);
         const skills = user?.skills || [];
-        
+
         const questions = await getMCQQuestionsBasedOnResume(skills, limit);
         res.json(questions);
     } catch (err) {
@@ -61,11 +63,11 @@ router.get("/technical-based-on-resume", authMiddleware, async (req, res) => {
         }
 
         const limit = parseInt(req.query.limit) || 10;
-        
+
         // Get user's skills from database
         const user = await User.findById(userId);
         const skills = user?.skills || [];
-        
+
         const questions = await getTechnicalQuestionsBasedOnResume(skills, limit);
         res.json(questions);
     } catch (err) {
@@ -73,5 +75,20 @@ router.get("/technical-based-on-resume", authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Failed to generate technical questions based on resume" });
     }
 });
+router.get("/hr-base", authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized: User not found" });
+        }
+        const limit = parseInt(req.query.limit) || 10;
+        const questions = await getHrQuestionsBased(limit);
+        res.json(questions);
 
-export default router;
+    } catch (error) {
+        console.error("/hr-based qs error:", error.message);
+        res.status(500).json({ error: "Failed to generate technical questions based on resume", error });
+    }
+}
+);
+export default router

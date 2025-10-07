@@ -30,7 +30,6 @@ export default function initInterviewSocket(io) {
                 const section = Array.isArray(skills) ? skills[0] : "general";
                 session.questions = await getGeminiQuestions(section, total);
 
-
                 console.log(
                     `📚 Generated ${session.questions.length} questions for ${userId}`
                 );
@@ -105,7 +104,6 @@ export default function initInterviewSocket(io) {
                 total: session.total,
             });
         }
-
         async function pushPrevQuestion(socketRef) {
             const session = sessions.get(socketRef.id);
             if (!session) return;

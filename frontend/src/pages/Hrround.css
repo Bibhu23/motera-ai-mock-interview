@@ -1,0 +1,92 @@
+#interviewVideo {
+    width: 100%;
+    max-width: 640px;
+    height: 480px;
+    background-color: black;
+    /* fallback if video fails */
+    border: 1px solid #ccc;
+}
+
+/* .appvide {
+    display: flex;
+    align-items: center;
+}
+
+.appcanvas {
+    position: absolute;
+    top: 100px
+}
+
+.myapp {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+} */
+.myapp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #f0f0f0;
+    gap: 20px;
+}
+
+.appvide {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+
+.feedback-section button {
+    margin-top: 12px;
+    padding: 8px 12px;
+}
+
+.permission-section,
+.start-section {
+    text-align: center;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+}
+
+.permission-section button,
+.start-section button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.permission-section button:hover,
+.start-section button:hover {
+    background: #0056b3;
+}
+
+.appcanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}

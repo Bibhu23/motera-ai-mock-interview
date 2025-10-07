@@ -1,12 +1,15 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LiveVideoInterviewPage.css";
+import "./Hrround.css";
 
-function LiveVideoInterviewPage() {
+
+import { FaSadCry } from "react-icons/fa";
+
+function HrInterviewPage() {
     const videoRef = useRef();
     const [question, setQuestion] = useState("");
     const [questionIndex, setQuestionIndex] = useState(0);
-    const [totalQuestions, setTotalQuestions] = useState(15);
+    const [totalQuestions, setTotalQuestions] = useState(10);
     const [scoreTotal, setScoreTotal] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -61,7 +64,7 @@ function LiveVideoInterviewPage() {
         try {
             // Use resume-based technical questions for the mock interview
             const res = await fetch(
-                `http://localhost:7656/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
+                `http://localhost:7656/api/gemini/hr-base?limit=${totalQuestions}`,
                 { credentials: "include" }
             );
             const data = await res.json();
@@ -90,6 +93,7 @@ function LiveVideoInterviewPage() {
 
         const audioStream = new MediaStream([audioTracks[0]]);
         let recorder;
+        let localChunks = [];
         try {
             recorder = new MediaRecorder(audioStream, {
                 mimeType: "audio/webm;codecs=opus",
@@ -102,16 +106,22 @@ function LiveVideoInterviewPage() {
             return;
         }
 
-        setRecordedChunks([]);
+
         recorder.ondataavailable = (e) => {
             if (e.data && e.data.size > 0) {
-                setRecordedChunks((prev) => [...prev, e.data]);
+                localChunks.push(e.data);
             }
         };
-        recorder.onstop = handleUpload;
+        recorder.onstop = async () => {
+            console.log("🛑 Recorder stopped. Total chunks:", localChunks.length);
+            setRecordedChunks(localChunks);
+            await handleUpload(localChunks);
+        }
 
         try {
             recorder.start();
+            console.log("Recording Start");
+
         } catch (err) {
             console.error("Failed to start recording:", err);
             alert("Failed to start recording. Please retry.");
@@ -124,22 +134,36 @@ function LiveVideoInterviewPage() {
 
     const stopRecording = () => {
         if (mediaRecorder) {
-            mediaRecorder.stop();
-            setRecording(false);
+            console.log("Stopping Recorder......");
+            setTimeout(() => {
+                mediaRecorder.stop();
+                setRecording(false);
+            }, 300)
+
+
         }
     };
 
     // ---------------- UPLOAD & TRANSCRIBE ----------------
-    const handleUpload = async () => {
-        if (!recordedChunks || recordedChunks.length === 0) return;
+    const handleUpload = async (chunks) => {
+        console.log("🎤 handleUpload triggered. Chunks received:", chunks?.length);
 
-        const blob = new Blob(recordedChunks, { type: "audio/webm" });
+        // 🔒 Validate chunks
+        if (!chunks || chunks.length === 0) {
+            console.warn("⚠️ No recorded chunks found.");
+            return;
+        }
+
+        // 🎧 Create a blob from recorded chunks
+        const blob = new Blob(chunks, { type: "audio/webm" });
+
+        // 🧩 Prepare FormData
         const formData = new FormData();
         formData.append("audio", blob, "answer.webm");
-        formData.append("question", question);
+        formData.append("question", question || "No question provided");
 
         try {
-            // Transcribe
+            console.log("⏫ Uploading audio to /api/transcribe...");
             const res = await fetch("http://localhost:7656/api/transcribe", {
                 method: "POST",
                 body: formData,
@@ -147,27 +171,53 @@ function LiveVideoInterviewPage() {
             });
 
             const data = await res.json();
+            console.log("📜 Transcribe API response:", data);
+
             if (!res.ok) {
-                setFeedback({ score: 0, feedback: data?.message || "Server error" });
+                console.error("❌ Transcribe API failed:", data);
+                setFeedback({ score: 0, feedback: data?.message || "Transcription error" });
                 return;
             }
 
-            // Send transcript + question to get feedback
+            if (!data.transcript || data.transcript.trim() === "") {
+                console.warn("⚠️ Empty transcript received.");
+                setFeedback({ score: 0, feedback: "No speech detected or unclear audio." });
+                return;
+            }
+
+            console.log("💬 Transcript:", data.transcript);
+
+            // 🎯 Send transcript for feedback
+            console.log("🧠 Sending transcript to /api/feedback...");
             const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ transcript: data.transcript, question }),
+                body: JSON.stringify({
+                    question,
+                    transcript: data.transcript,
+                }),
             });
 
             const feedbackData = await feedbackRes.json();
+            console.log("🤖 Feedback API response:", feedbackData);
+
+            if (!feedbackRes.ok) {
+                console.error("❌ Feedback API failed:", feedbackData);
+                setFeedback({ score: 0, feedback: feedbackData?.message || "Feedback error" });
+                return;
+            }
+
+            // 🧾 Validate and update UI
+            const numericScore = Number(feedbackData?.feedback?.score || 0);
             setFeedback(feedbackData.feedback);
-            const numericScore = Number(feedbackData.feedback?.score || 0);
             setScoreTotal((prev) => prev + numericScore);
+
         } catch (err) {
-            console.error(err);
-            setFeedback({ score: 0, feedback: "Error analyzing answer" });
+            console.error("💥 handleUpload error:", err);
+            setFeedback({ score: 0, feedback: "Error analyzing answer. Please retry." });
         }
     };
+
 
     const nextQuestion = () => {
         setFeedback(null);
@@ -250,4 +300,4 @@ function LiveVideoInterviewPage() {
     );
 }
 
-export default LiveVideoInterviewPage;
+export default HrInterviewPage;

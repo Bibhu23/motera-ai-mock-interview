@@ -8,8 +8,7 @@ function Sidebar() {
             <ul>
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
-                <li><Link to="/result">Results</Link></li>
-                <li><Link to="/setting">Settings</Link></li>
+                <li><Link to="/dashboard">Results</Link></li>
                 <li><Link to="/logout">Logout</Link></li>
             </ul>
         </div>

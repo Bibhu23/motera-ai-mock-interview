@@ -11,10 +11,11 @@ const Round1 = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [creditChecked, setCreditChecked] = useState(false);
-  const navigate = useNavigate();
-  const { login, credit, setCredit, consumeCredit } = useContext(AppContext);
 
-  // Check credits when component loads
+  const navigate = useNavigate();
+  const { login, consumeCredit } = useContext(AppContext);
+
+  // Check user credits on component mount
   useEffect(() => {
     const checkCredits = async () => {
       if (login) {
@@ -23,13 +24,15 @@ const Round1 = () => {
             "http://localhost:7656/user/api/v1/credit",
             { withCredentials: true }
           );
-          
+
           if (!response.data.success || response.data.creditBalance <= 0) {
-            toast.error("Not enough credits to start Round 1. Please purchase credits first.");
-            navigate("/buycredit");
+            toast.error(
+              "Not enough credits to start Round 1. Please purchase credits first."
+            );
+            navigate("/buy");
             return;
           }
-          
+
           setCreditChecked(true);
         } catch (error) {
           console.error("Failed to check credits:", error);
@@ -64,7 +67,7 @@ const Round1 = () => {
       setUploading(true);
       setProgress(0);
 
-      // First deduct credit
+      // Deduct credit
       const creditResult = await consumeCredit();
       if (!creditResult.success) {
         toast.error(creditResult.message || "Failed to deduct credit");
@@ -72,6 +75,7 @@ const Round1 = () => {
         return;
       }
 
+      // Upload resume and get score from analysis API
       const response = await axios.post(
         "http://localhost:7656/api/upload-resume",
         formData,
@@ -87,11 +91,23 @@ const Round1 = () => {
         }
       );
 
-      setUploading(false);
-
       const { score } = response.data;
       setScore(score);
 
+      // Update backend resumeScore so dashboard reflects it
+      try {
+        await axios.post(
+          "http://localhost:7656/user/api/v1/update-round",
+          { round: "Resume Shortlist", score },
+          { withCredentials: true }
+        );
+      } catch (err) {
+        console.error("Failed to update backend:", err.response?.data || err.message);
+      }
+
+      setUploading(false);
+
+      // Navigate based on eligibility
       if (score > 50) {
         toast.success(`✅ Score: ${score} - Eligible for Round 2!`);
         navigate("/round2");
@@ -161,7 +177,9 @@ const Round1 = () => {
             Drop your resume here or choose a file.<br />
             <small>PDF & DOCX only. Max 2MB file size.</small><br />
             <small>Privacy guaranteed</small><br />
-            <small className="text-warning">⚠️ 1 credit will be deducted when you upload</small>
+            <small className="text-warning">
+              ⚠️ 1 credit will be deducted when you upload
+            </small>
           </p>
 
           <div className="mb-3 w-75">
