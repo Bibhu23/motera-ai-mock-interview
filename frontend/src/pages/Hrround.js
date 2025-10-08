@@ -18,7 +18,26 @@ function HrInterviewPage() {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [mediaStream, setMediaStream] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
+    const [show, setShow] = useState(false);
+  const [ison, setIson] = useState(false);
+
   const navigate = useNavigate();
+
+  // ---------------- CAMERA READY EVENT ---------------- 
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const handlePlaying = () => {
+      console.log("✅ Camera feed started");
+      setCameraReady(true);
+    };
+
+    videoEl.addEventListener("playing", handlePlaying);
+
+    return () => videoEl.removeEventListener("playing", handlePlaying);
+  }, []);
 
   useEffect(() => {
     requestPermissions();
@@ -38,34 +57,66 @@ function HrInterviewPage() {
     }
   }, [questionIndex, interviewStarted, questions]);
 
-  const requestPermissions = () => {
-    console.log("Requesting camera and microphone permissions...");
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        console.log("Permissions granted, media stream ready");
+const requestPermissions = async () => {
+  console.log("Requesting camera and microphone permissions...");
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { 
+        facingMode: "user",
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      },
+      audio: true,
+    });
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+    console.log("✅ Permissions granted, media stream ready");
 
-          // ✅ force video to play
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play().catch((err) => {
-              console.warn("Autoplay blocked:", err);
-            });
-          };
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+
+      // Force video playback
+      videoRef.current.onloadedmetadata = async () => {
+        try {
+          await videoRef.current.play();
+          console.log("🎥 Video playback started immediately");
+        } catch (playError) {
+          console.warn("⚠️ Autoplay blocked, user interaction required");
+          // Don't retry automatically - let user interaction handle it
         }
+      };
 
-        setMediaStream(stream);
-        setPermissionsGranted(true);
-      })
-      .catch((err) => {
-        console.error("Permission error:", err);
-        alert(
-          "Please allow camera and microphone access to continue with the interview."
-        );
-      });
-  };
+      // Additional event listeners for better error handling
+      videoRef.current.onerror = (error) => {
+        console.error("Video element error:", error);
+      };
+
+      videoRef.current.onstalled = () => {
+        console.warn("Video stream stalled, attempting to restart...");
+        if (videoRef.current && videoRef.current.paused) {
+          videoRef.current.play().catch(console.error);
+        }
+      };
+    }
+
+    setMediaStream(stream);
+    setPermissionsGranted(true);
+  } catch (err) {
+    console.error("Permission error:", err);
+    let errorMessage = "Please allow camera and microphone access to continue.";
+    
+    if (err.name === 'NotAllowedError') {
+      errorMessage = "Camera and microphone access was denied. Please refresh the page and allow access.";
+    } else if (err.name === 'NotFoundError') {
+      errorMessage = "No camera or microphone found. Please check your device connections.";
+    } else if (err.name === 'NotReadableError') {
+      errorMessage = "Camera or microphone is already in use by another application.";
+    }
+    
+    alert(errorMessage);
+  }
+};
+
+
 
   const startInterview = async () => {
     if (!permissionsGranted) {
@@ -84,6 +135,7 @@ function HrInterviewPage() {
       setQuestions(data);
       setInterviewStarted(true);
       setQuestionIndex(0);
+        setShow(true);
     } catch (err) {
       console.error("Failed to fetch questions:", err);
       alert("Failed to load interview questions. Please try again.");
@@ -249,9 +301,39 @@ function HrInterviewPage() {
     setQuestionIndex((prev) => prev + 1);
   };
 
+  const restartCamera = async () => {
+    console.log("🔄 Restarting camera...");
+    setCameraReady(false);
+    
+    // Stop existing stream
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+    }
+    
+    // Clear video element
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    
+    // Wait a moment then restart
+    setTimeout(() => {
+      requestPermissions();
+    }, 500);
+        setIson(true);
+  };
+
   return (
     <div className="myapp">
       <h1>Live Mock Interview</h1>
+
+       {!ison && <> ( { show && <>({!cameraReady && permissionsGranted && (
+        <div className="camera-status">
+          <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
+            On Camera
+          </button>
+        </div>
+      )})
+      </>} )</>}
 
       {!permissionsGranted && (
         <div className="permission-section">
@@ -291,10 +373,14 @@ function HrInterviewPage() {
           </div>
 
           <div className="question-section">
-            <h2>
-              Question {questionIndex + 1} of {totalQuestions}:
-            </h2>
-            <p>{question}</p>
+           {ison && (
+              <>
+                <h2>
+                  Question {questionIndex + 1} of {totalQuestions}:
+                </h2>
+                <p>{question}</p>
+              </>
+            )}
             {!recording && (
               <button onClick={startRecording}>Start Recording Answer</button>
             )}
@@ -319,6 +405,7 @@ function HrInterviewPage() {
               </button>
             </div>
           )}
+        
         </>
       )}
     </div>

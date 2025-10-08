@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./LiveVideoInterviewPage.css";
 
 function LiveVideoInterviewPage() {
-  const videoRef = useRef();
+  const videoRef = useRef(null);
   const [question, setQuestion] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(15);
@@ -16,9 +16,28 @@ function LiveVideoInterviewPage() {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [mediaStream, setMediaStream] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [show, setShow] = useState(false);
+  const [ison, setIson] = useState(false);
+
   const navigate = useNavigate();
 
-  // Request camera/mic permissions
+  // ---------------- CAMERA READY EVENT ----------------
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const handlePlaying = () => {
+      console.log("✅ Camera feed started");
+      setCameraReady(true);
+    };
+
+    videoEl.addEventListener("playing", handlePlaying);
+
+    return () => videoEl.removeEventListener("playing", handlePlaying);
+  }, []);
+
+  // ---------------- REQUEST PERMISSIONS ----------------
   useEffect(() => {
     requestPermissions();
   }, []);
@@ -31,40 +50,74 @@ function LiveVideoInterviewPage() {
     };
   }, [mediaStream]);
 
+  const requestPermissions = async () => {
+    console.log("Requesting camera and microphone permissions...");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: true,
+      });
+
+      console.log("✅ Permissions granted, media stream ready");
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        // Force video playback
+        videoRef.current.onloadedmetadata = async () => {
+          try {
+            await videoRef.current.play();
+            console.log("🎥 Video playback started immediately");
+          } catch (playError) {
+            console.warn("⚠️ Autoplay blocked, user interaction required");
+          }
+        };
+
+        // Additional event listeners for better error handling
+        videoRef.current.onerror = (error) => {
+          console.error("Video element error:", error);
+        };
+
+        videoRef.current.onstalled = () => {
+          console.warn("Video stream stalled, attempting to restart...");
+          if (videoRef.current && videoRef.current.paused) {
+            videoRef.current.play().catch(console.error);
+          }
+        };
+      }
+
+      setMediaStream(stream);
+      setPermissionsGranted(true);
+    } catch (err) {
+      console.error("Permission error:", err);
+      let errorMessage =
+        "Please allow camera and microphone access to continue.";
+
+      if (err.name === "NotAllowedError") {
+        errorMessage =
+          "Camera and microphone access was denied. Please refresh the page and allow access.";
+      } else if (err.name === "NotFoundError") {
+        errorMessage =
+          "No camera or microphone found. Please check your device connections.";
+      } else if (err.name === "NotReadableError") {
+        errorMessage =
+          "Camera or microphone is already in use by another application.";
+      }
+
+      alert(errorMessage);
+    }
+  };
+
+  // ---------------- INTERVIEW QUESTIONS ----------------
   useEffect(() => {
     if (interviewStarted && questions.length > 0) {
       setQuestion(questions[questionIndex]?.question || "No question found");
     }
   }, [questionIndex, interviewStarted, questions]);
-
-  const requestPermissions = () => {
-    console.log("Requesting camera and microphone permissions...");
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        console.log("Permissions granted, media stream ready");
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-
-          // ✅ force video to play
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play().catch((err) => {
-              console.warn("Autoplay blocked:", err);
-            });
-          };
-        }
-
-        setMediaStream(stream);
-        setPermissionsGranted(true);
-      })
-      .catch((err) => {
-        console.error("Permission error:", err);
-        alert(
-          "Please allow camera and microphone access to continue with the interview."
-        );
-      });
-  };
 
   const startInterview = async () => {
     if (!permissionsGranted) {
@@ -73,18 +126,17 @@ function LiveVideoInterviewPage() {
     }
 
     try {
-      console.log("Fetching technical questions from backend...");
       const res = await fetch(
         `http://localhost:7656/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
         { credentials: "include" }
       );
       const data = await res.json();
-      console.log("Questions received:", data);
 
       if (!Array.isArray(data)) throw new Error("Invalid questions response");
       setQuestions(data);
       setInterviewStarted(true);
       setQuestionIndex(0);
+      setShow(true);
     } catch (err) {
       console.error("Failed to fetch questions:", err);
       alert("Failed to load interview questions. Please try again.");
@@ -93,7 +145,6 @@ function LiveVideoInterviewPage() {
 
   // ---------------- RECORDING LOGIC ----------------
   const startRecording = () => {
-    console.log("Starting recording...");
     if (!mediaStream) {
       alert("No media stream available. Please allow camera and mic.");
       return;
@@ -108,6 +159,7 @@ function LiveVideoInterviewPage() {
     const audioStream = new MediaStream([audioTracks[0]]);
     let recorder;
     let localChunks = [];
+
     try {
       recorder = new MediaRecorder(audioStream, {
         mimeType: "audio/webm;codecs=opus",
@@ -121,58 +173,33 @@ function LiveVideoInterviewPage() {
     }
 
     recorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) {
-        localChunks.push(e.data);
-      }
+      if (e.data && e.data.size > 0) localChunks.push(e.data);
     };
 
     recorder.onstop = async () => {
-      console.log("🛑 Recording stopped. Total chunks:", localChunks.length);
-
-      // Wait a tiny bit to ensure chunks are finalized
-      setTimeout(async () => {
-        if (!localChunks || localChunks.length === 0) {
-          console.warn("⚠️ No chunks recorded or audio too short.");
-          setFeedback({ score: 0, feedback: "No valid audio recorded." });
-          return;
-        }
-
-        setRecordedChunks(localChunks);
-        await handleUpload(localChunks);
-      }, 300); // small delay to ensure chunks are ready
+      if (!localChunks || localChunks.length === 0) {
+        setFeedback({ score: 0, feedback: "No valid audio recorded." });
+        return;
+      }
+      setRecordedChunks(localChunks);
+      await handleUpload(localChunks);
     };
 
-    try {
-      recorder.start();
-      console.log("Recording started");
-    } catch (err) {
-      console.error("Failed to start recording:", err);
-      alert("Failed to start recording. Please retry.");
-      return;
-    }
-
+    recorder.start();
     setMediaRecorder(recorder);
     setRecording(true);
   };
 
   const stopRecording = () => {
     if (mediaRecorder) {
-      console.log("Stopping recorder...");
-      setTimeout(() => {
-        mediaRecorder.stop();
-        setRecording(false);
-      }, 300);
+      mediaRecorder.stop();
+      setRecording(false);
     }
   };
 
   // ---------------- UPLOAD & TRANSCRIBE ----------------
   const handleUpload = async (chunks) => {
-    console.log("🎤 handleUpload triggered. Chunks:", chunks?.length);
-
-    if (!chunks || chunks.length === 0) {
-      console.warn("No recorded chunks found.");
-      return;
-    }
+    if (!chunks || chunks.length === 0) return;
 
     const blob = new Blob(chunks, { type: "audio/webm" });
     const formData = new FormData();
@@ -180,17 +207,14 @@ function LiveVideoInterviewPage() {
     formData.append("question", question);
 
     try {
-      console.log("⏫ Uploading audio to /api/transcribe...");
       const res = await fetch("http://localhost:7656/api/transcribe", {
         method: "POST",
         body: formData,
         credentials: "include",
       });
       const data = await res.json();
-      console.log("📜 Transcribe API response:", data);
 
-      if (!res.ok) {
-        console.error("❌ Transcribe API failed:", data);
+      if (!res.ok || !data.transcript) {
         setFeedback({
           score: 0,
           feedback: data?.message || "Transcription error",
@@ -198,28 +222,14 @@ function LiveVideoInterviewPage() {
         return;
       }
 
-      if (!data.transcript || data.transcript.trim() === "") {
-        console.warn("⚠️ Empty transcript received.");
-        setFeedback({
-          score: 0,
-          feedback: "No speech detected or unclear audio.",
-        });
-        return;
-      }
-
-      console.log("💬 Transcript:", data.transcript);
-
-      console.log("🧠 Sending transcript to /api/feedback...");
       const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, transcript: data.transcript }),
       });
       const feedbackData = await feedbackRes.json();
-      console.log("🤖 Feedback API response:", feedbackData);
 
       if (!feedbackRes.ok) {
-        console.error("❌ Feedback API failed:", feedbackData);
         setFeedback({
           score: 0,
           feedback: feedbackData?.message || "Feedback error",
@@ -231,7 +241,7 @@ function LiveVideoInterviewPage() {
       setFeedback(feedbackData.feedback);
       setScoreTotal((prev) => prev + numericScore);
     } catch (err) {
-      console.error("💥 handleUpload error:", err);
+      console.error("handleUpload error:", err);
       setFeedback({
         score: 0,
         feedback: "Error analyzing answer. Please retry.",
@@ -251,17 +261,44 @@ function LiveVideoInterviewPage() {
     setQuestionIndex((prev) => prev + 1);
   };
 
+  const restartCamera = async () => {
+    console.log("🔄 Restarting camera...");
+    setCameraReady(false);
+
+    // Stop existing stream
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+    }
+
+    // Clear video element
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    // Wait a moment then restart
+    setTimeout(() => {
+      requestPermissions();
+    }, 500);
+    setIson(true);
+  };
+
   return (
     <div className="myapp">
       <h1>Live Mock Interview</h1>
 
+    {!ison && <> ( { show && <>({!cameraReady && permissionsGranted && (
+        <div className="camera-status">
+          <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
+            On Camera
+          </button>
+        </div>
+      )})
+      </>} )</>}
+
       {!permissionsGranted && (
         <div className="permission-section">
           <h2>Camera & Microphone Access Required</h2>
-          <p>
-            Please allow camera and microphone access to continue with the
-            interview.
-          </p>
+          <p>Please allow camera and microphone access to continue.</p>
           <button onClick={requestPermissions}>Allow Access</button>
         </div>
       )}
@@ -271,10 +308,8 @@ function LiveVideoInterviewPage() {
           <h2>Ready to Start Mock Interview?</h2>
           <p>
             You will be asked {totalQuestions} technical questions based on your
-            resume skills. Record your answers and get AI feedback.
+            resume skills.
           </p>
-          <p>✅ Camera and microphone are ready</p>
-          <p>📄 Questions will be personalized based on your uploaded resume</p>
           <button onClick={startInterview}>Start Mock Interview</button>
         </div>
       )}
@@ -293,10 +328,15 @@ function LiveVideoInterviewPage() {
           </div>
 
           <div className="question-section">
-            <h2>
-              Question {questionIndex + 1} of {totalQuestions}:
-            </h2>
-            <p>{question}</p>
+            {ison && (
+              <>
+                <h2>
+                  Question {questionIndex + 1} of {totalQuestions}:
+                </h2>
+                <p>{question}</p>
+              </>
+            )}
+
             {!recording && (
               <button onClick={startRecording}>Start Recording Answer</button>
             )}

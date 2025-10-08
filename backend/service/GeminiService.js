@@ -242,8 +242,8 @@ Generate exactly ${limit} unique technical interview questions based on the foll
 - Experience: ${experienceYears} years
 
 Guidelines:
-- If experienceYears is between 0–1 → generate beginner/easy-level questions focused on basic concepts and syntax.
-- If experienceYears is between 1–5 → generate intermediate to advanced questions focusing on architecture, debugging, and optimization.
+- If experienceYears is between 0 to 1 → generate beginner/easy-level questions focused on basic concepts and syntax.
+- If experienceYears is between 1 to 5 → generate intermediate to advanced questions focusing on architecture, debugging, and optimization.
 - If experienceYears is greater than 5 → generate advanced to expert-level questions focusing on scalability, design patterns, and system design.
 
 Each question must be practical, implementation-oriented, and different every time even for the same user (avoid repetition).

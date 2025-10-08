@@ -67,3 +67,27 @@
     margin-top: 12px;
     padding: 8px 12px;
 }
+
+.camera-status {
+    text-align: center;
+    padding: 15px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 5px;
+    margin: 10px;
+    color: #856404;
+}
+
+.camera-status button {
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.camera-status button:hover {
+    background: #e0a800;
+}
