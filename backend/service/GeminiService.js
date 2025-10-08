@@ -17,13 +17,14 @@ async function callGemini(prompt) {
             },
             timeout: 40000,
         });
+        const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    return text?.trim();
     } catch (error) {
         throw new Error("Gemini API error: " + (error.response?.data || error.message));
 
     }
 
-    const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return text?.trim();
+    
 }
 
 
@@ -108,10 +109,24 @@ export async function getGeminiQuestions(section, limit = 5) {
 }
 
 // Generate MCQ questions based on resume skills
-export async function getMCQQuestionsBasedOnResume(skills = [], limit = 5) {
+export async function getMCQQuestionsBasedOnResume(skills = [], limit = 5,experienceYears) {
     const skillsText = skills.length > 0 ? skills.join(", ") : "general programming";
-    const prompt = `Generate ${limit} multiple-choice questions based on these skills: ${skillsText}.
-Return ONLY a valid JSON array with this exact shape:
+ const prompt = `
+You are an expert technical interviewer. Generate exactly ${limit} unique multiple-choice questions 
+based on the following candidate skills and experience:
+
+Skills: ${skillsText}
+Experience: ${experienceYears} years
+
+Rules:
+- If experience is between 0 to 1 → easy level
+- If experience is between 1 to 5 → medium to high level
+- If experience is greater than 5 → high to very high level
+- Each question must be different and relevant to the given skills.
+- Each question must have exactly 4 answer options.
+- Each question must include the correct answer and a clear explanation.
+
+Return ONLY a valid JSON array in this exact format:
 [
   {
     "question": "What is the main purpose of React hooks?",
@@ -120,7 +135,8 @@ Return ONLY a valid JSON array with this exact shape:
     "explanation": "React hooks allow functional components to use state and other React features."
   }
 ]
-Make questions relevant to the skills mentioned. Include 4 options (a, b, c, d) and provide clear explanations.`;
+Do not include any text or notes outside the JSON.
+`;
 
     let raw;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -204,17 +220,38 @@ async function safeCallGemini(prompt, maxAttempts = 3) {
 }
 
 // Main function: get technical questions with optional feedback
-export async function getTechnicalQuestionsBasedOnResume(skills = [], limit = 10) {
+export async function getTechnicalQuestionsBasedOnResume(skills = [], limit = 10,experienceYears) {
     const skillsText = skills.length > 0 ? skills.join(", ") : "general programming";
 
-    const prompt = `You are an expert technical interviewer.
-Generate ${limit} technical interview questions based on these skills: ${skillsText}.
-Return ONLY a valid JSON array in this exact shape:
+ const prompt = `
+You are an expert technical interviewer for software engineering candidates.
+
+Generate exactly ${limit} unique technical interview questions based on the following details:
+- Candidate skills: ${skillsText}
+- Experience: ${experienceYears} years
+
+Guidelines:
+- If experienceYears is between 0–1 → generate beginner/easy-level questions focused on basic concepts and syntax.
+- If experienceYears is between 1–5 → generate intermediate to advanced questions focusing on architecture, debugging, and optimization.
+- If experienceYears is greater than 5 → generate advanced to expert-level questions focusing on scalability, design patterns, and system design.
+
+Each question must be practical, implementation-oriented, and different every time even for the same user (avoid repetition).
+
+Return ONLY a valid JSON array in this exact format:
 [
-  { "question": "Explain how you would implement authentication in a Node.js application.", "feedback": "..." },
-  { "question": "Describe the difference between SQL and NoSQL databases.", "feedback": "..." }
+  {
+    "question": "Explain how you would implement authentication in a Node.js application.",
+    "feedback": "Use JWT for stateless auth or sessions for persistent logins. Emphasize password hashing and middleware."
+  },
+  {
+    "question": "Describe the difference between SQL and NoSQL databases.",
+    "feedback": "SQL uses structured schemas, while NoSQL stores flexible documents or key-value data. Choose based on use case."
+  }
 ]
-Focus on practical implementation, problem-solving, and provide short hints or feedback for each question.`;
+
+Do not include any explanations, introductions, or text outside the JSON array.
+`;
+
 
     let raw;
     try {

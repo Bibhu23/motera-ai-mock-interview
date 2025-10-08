@@ -45,8 +45,10 @@ router.get("/mcq-based-on-resume", authMiddleware, async (req, res) => {
         // Get user's skills from database
         const user = await User.findById(userId);
         const skills = user?.skills || [];
+        const experienceYears = user?.experienceYears || 0;
+        console.log("User skills:", skills, "Experience Years:", experienceYears);
 
-        const questions = await getMCQQuestionsBasedOnResume(skills, limit);
+        const questions = await getMCQQuestionsBasedOnResume(skills, limit,experienceYears);
         res.json(questions);
     } catch (err) {
         console.error("/mcq-based-on-resume error:", err.message);
@@ -67,8 +69,12 @@ router.get("/technical-based-on-resume", authMiddleware, async (req, res) => {
         // Get user's skills from database
         const user = await User.findById(userId);
         const skills = user?.skills || [];
+        const experienceYears = user?.experienceYears || 0;
+        console.log("User experience years:", experienceYears);
+        console.log("User skills:", skills);
+        
 
-        const questions = await getTechnicalQuestionsBasedOnResume(skills, limit);
+        const questions = await getTechnicalQuestionsBasedOnResume(skills, limit,experienceYears);
         res.json(questions);
     } catch (err) {
         console.error("/technical-based-on-resume error:", err.message);

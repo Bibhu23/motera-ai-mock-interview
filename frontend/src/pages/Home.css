@@ -8,7 +8,12 @@
 }
 
 .img-container {
-    width: 500px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.img-container:hover {
+  transform: scale(1.05);
 }
 
 .text h1 {
