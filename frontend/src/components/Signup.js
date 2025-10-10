@@ -38,7 +38,7 @@ export default function Signup() {
     };
 
     const handleGoogleSignup = () => {
-        window.location.href = "http://localhost:7656/auth/google";
+        window.location.href = "https://motera-backend.onrender.com";
     };
 
     return (
