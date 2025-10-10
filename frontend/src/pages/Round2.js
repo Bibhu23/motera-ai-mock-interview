@@ -30,7 +30,7 @@ const Round2 = () => {
                         : "/api/gemini/technical-based-on-resume";
 
                 const response = await axios.get(
-                    `http://localhost:7656${endpoint}?limit=${questionCount}`,
+                    `https://motera-backend.onrender.com${endpoint}?limit=${questionCount}`,
                     { withCredentials: true }
                 );
 
@@ -88,7 +88,7 @@ const Round2 = () => {
 
             // 1️⃣ Send percentage score to backend
             await axios.post(
-                "http://localhost:7656/user/api/v1/update-round",
+                "https://motera-backend.onrender.com/user/api/v1/update-round",
                 { round: "Written Test", score: scorePercent },
                 { withCredentials: true }
             );
