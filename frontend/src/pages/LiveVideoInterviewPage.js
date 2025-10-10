@@ -178,7 +178,7 @@ function LiveVideoInterviewPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:7656/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
+        `https://motera-backend.onrender.com/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
         { credentials: "include" }
       );
       const data = await res.json();
@@ -258,7 +258,7 @@ function LiveVideoInterviewPage() {
     formData.append("question", question);
 
     try {
-      const res = await fetch("http://localhost:7656/api/transcribe", {
+      const res = await fetch("https://motera-backend.onrender.com/api/transcribe", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -273,7 +273,7 @@ function LiveVideoInterviewPage() {
         return;
       }
 
-      const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
+      const feedbackRes = await fetch("https://motera-backend.onrender.com/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, transcript: data.transcript }),
@@ -373,7 +373,7 @@ function LiveVideoInterviewPage() {
       const scorePercent = Math.round((finalScore / maxScore) * 100);
 
       await fetch(
-        "http://localhost:7656/user/api/v1/submit-technical-score",
+        "https://motera-backend.onrender.com/user/api/v1/submit-technical-score",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -384,7 +384,7 @@ function LiveVideoInterviewPage() {
 
       alert(`✅ Live Video (Technical) score saved: ${scorePercent}%`);
 
-      await axios.get("http://localhost:7656/user/api/v1/interview-rounds", {
+      await axios.get("https://motera-backend.onrender.com/user/api/v1/interview-rounds", {
         withCredentials: true,
       });
     } catch (err) {
