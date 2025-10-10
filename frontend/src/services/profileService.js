@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API_URL = "http://localhost:7656/user/api/v1/profile";
+const API_URL = "https://motera-backend.onrender.com";
 
 /*export async function uploadResume(file) {
     const formData = new FormData();
