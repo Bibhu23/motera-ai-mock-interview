@@ -17,7 +17,7 @@ export default function Dashboard() {
     async function fetchRounds() {
         try {
             const res = await axios.get(
-                "http://localhost:7656/user/api/v1/interview-rounds",
+                "https://motera-backend.onrender.com/user/api/v1/interview-rounds",
                 { withCredentials: true }
             );
             setInterviewRounds(res.data.rounds || []);
