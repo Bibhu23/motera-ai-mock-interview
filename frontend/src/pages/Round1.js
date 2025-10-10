@@ -21,7 +21,7 @@ const Round1 = () => {
       if (login) {
         try {
           const response = await axios.get(
-            "http://localhost:7656/user/api/v1/credit",
+            "https://motera-backend.onrender.com/user/api/v1/credit",
             { withCredentials: true }
           );
 
@@ -77,7 +77,7 @@ const Round1 = () => {
 
       // Upload resume and get score from analysis API
       const response = await axios.post(
-        "http://localhost:7656/api/upload-resume",
+        "https://motera-backend.onrender.com/api/upload-resume",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -97,7 +97,7 @@ const Round1 = () => {
       // Update backend resumeScore so dashboard reflects it
       try {
         await axios.post(
-          "http://localhost:7656/user/api/v1/update-round",
+          "https://motera-backend.onrender.com/user/api/v1/update-round",
           { round: "Resume Shortlist", score },
           { withCredentials: true }
         );
