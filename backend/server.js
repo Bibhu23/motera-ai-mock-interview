@@ -22,7 +22,6 @@ import passport from "./middleware/googleAuth.js";
 import round3Routes from "./route/round3.route.js";
 import hrRoute from "./route/hr.route.js";
 
-
 const port = process.env.PORT || 7656;
 const app = express();
 //handling cors error
