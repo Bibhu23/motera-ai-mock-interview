@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./LiveVideoInterviewPage.css";
-import * as faceapi from "face-api.js";
+import * as faceapi from "face-api.js/dist/face-api.min.js";
 
 function LiveVideoInterviewPage() {
   const videoRef = useRef(null);
