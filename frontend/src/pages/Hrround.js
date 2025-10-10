@@ -2,9 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Hrround.css";
-import * as faceapi from 'face-api.js'
-
-
+import * as faceapi from "face-api.js";
 import { FaSadCry } from "react-icons/fa";
 
 function HrInterviewPage() {
@@ -21,8 +19,64 @@ function HrInterviewPage() {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [mediaStream, setMediaStream] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [show, setShow] = useState(false);
+  const [ison, setIson] = useState(false);
+  const [faceMissingCount, setFaceMissingCount] = useState(0);
+
   const navigate = useNavigate();
 
+  // ---------------- CAMERA READY EVENT ----------------
+  useEffect(() => {
+    const handlePlaying = () => {
+      console.log("✅ Camera feed started");
+      setCameraReady(true);
+    };
+
+    if (videoRef.current) {
+      videoRef.current.addEventListener("playing", handlePlaying);
+    }
+
+    return () => {
+      if (videoRef.current)
+        videoRef.current.removeEventListener("playing", handlePlaying);
+    };
+  }, []);
+
+  // ---------------- LOAD FACE API MODELS ----------------
+  useEffect(() => {
+    const loadModels = async () => {
+      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+      console.log("✅ Face-api models loaded");
+    };
+    loadModels();
+  }, []);
+
+  // ---------------- FACE DETECTION ----------------
+  useEffect(() => {
+    let localMissingCount = 0;
+
+    let interval = setInterval(async () => {
+      if (!videoRef.current) return;
+      const detection = await faceapi.detectSingleFace(
+        videoRef.current,
+        new faceapi.TinyFaceDetectorOptions()
+      );
+      if (!detection) {
+        localMissingCount++;
+        if (localMissingCount >= 3) {
+          alert("⚠️ Please stay in front of the camera!");
+          localMissingCount = 0; // reset after alert
+        }
+      } else {
+        localMissingCount = 0;
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [cameraReady, faceMissingCount]);
+
+  // ---------------- TAB VISIBILITY DETECTION ----------------
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
@@ -52,33 +106,64 @@ function HrInterviewPage() {
     }
   }, [questionIndex, interviewStarted, questions]);
 
-  const requestPermissions = () => {
+  const requestPermissions = async () => {
     console.log("Requesting camera and microphone permissions...");
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        console.log("Permissions granted, media stream ready");
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-
-          // ✅ force video to play
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play().catch((err) => {
-              console.warn("Autoplay blocked:", err);
-            });
-          };
-        }
-
-        setMediaStream(stream);
-        setPermissionsGranted(true);
-      })
-      .catch((err) => {
-        console.error("Permission error:", err);
-        alert(
-          "Please allow camera and microphone access to continue with the interview."
-        );
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: true,
       });
+
+      console.log("✅ Permissions granted, media stream ready");
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        videoRef.current.onloadedmetadata = async () => {
+          try {
+            await videoRef.current.play();
+            console.log("🎥 Video playback started immediately");
+          } catch (playError) {
+            console.warn("⚠️ Autoplay blocked, user interaction required");
+          }
+        };
+
+        videoRef.current.onerror = (error) => {
+          console.error("Video element error:", error);
+        };
+
+        videoRef.current.onstalled = () => {
+          console.warn("Video stream stalled, attempting to restart...");
+          if (videoRef.current && videoRef.current.paused) {
+            videoRef.current.play().catch(console.error);
+          }
+        };
+      }
+
+      setMediaStream(stream);
+      setPermissionsGranted(true);
+    } catch (err) {
+      console.error("Permission error:", err);
+      let errorMessage =
+        "Please allow camera and microphone access to continue.";
+
+      if (err.name === "NotAllowedError") {
+        errorMessage =
+          "Camera and microphone access was denied. Please refresh the page and allow access.";
+      } else if (err.name === "NotFoundError") {
+        errorMessage =
+          "No camera or microphone found. Please check your device connections.";
+      } else if (err.name === "NotReadableError") {
+        errorMessage =
+          "Camera or microphone is already in use by another application.";
+      }
+
+      alert(errorMessage);
+    }
   };
 
   const startInterview = async () => {
@@ -88,7 +173,6 @@ function HrInterviewPage() {
     }
 
     try {
-      // Use resume-based technical questions for the mock interview
       const res = await fetch(
         `http://localhost:7656/api/gemini/hr-base?limit=${totalQuestions}`,
         { credentials: "include" }
@@ -98,13 +182,13 @@ function HrInterviewPage() {
       setQuestions(data);
       setInterviewStarted(true);
       setQuestionIndex(0);
+      setShow(true);
     } catch (err) {
       console.error("Failed to fetch questions:", err);
       alert("Failed to load interview questions. Please try again.");
     }
   };
 
-  // ---------------- RECORDING LOGIC ----------------
   const startRecording = () => {
     if (!mediaStream) {
       alert("No media stream available. Please allow camera and mic.");
@@ -120,15 +204,14 @@ function HrInterviewPage() {
     const audioStream = new MediaStream([audioTracks[0]]);
     let recorder;
     let localChunks = [];
+
     try {
       recorder = new MediaRecorder(audioStream, {
         mimeType: "audio/webm;codecs=opus",
       });
     } catch (err) {
       console.error("MediaRecorder not supported:", err);
-      alert(
-        "Recording is not supported in this browser. Use latest Chrome/Edge."
-      );
+      alert("Recording is not supported in this browser. Use latest Chrome/Edge.");
       return;
     }
 
@@ -166,26 +249,20 @@ function HrInterviewPage() {
     }
   };
 
-  // ---------------- UPLOAD & TRANSCRIBE ----------------
   const handleUpload = async (chunks) => {
     console.log("🎤 handleUpload triggered. Chunks received:", chunks?.length);
 
-    // 🔒 Validate chunks
     if (!chunks || chunks.length === 0) {
       console.warn("⚠️ No recorded chunks found.");
       return;
     }
 
-    // 🎧 Create a blob from recorded chunks
     const blob = new Blob(chunks, { type: "audio/webm" });
-
-    // 🧩 Prepare FormData
     const formData = new FormData();
     formData.append("audio", blob, "answer.webm");
     formData.append("question", question || "No question provided");
 
     try {
-      console.log("⏫ Uploading audio to /api/transcribe...");
       const res = await fetch("http://localhost:7656/api/transcribe", {
         method: "POST",
         body: formData,
@@ -196,7 +273,6 @@ function HrInterviewPage() {
       console.log("📜 Transcribe API response:", data);
 
       if (!res.ok) {
-        console.error("❌ Transcribe API failed:", data);
         setFeedback({
           score: 0,
           feedback: data?.message || "Transcription error",
@@ -205,7 +281,6 @@ function HrInterviewPage() {
       }
 
       if (!data.transcript || data.transcript.trim() === "") {
-        console.warn("⚠️ Empty transcript received.");
         setFeedback({
           score: 0,
           feedback: "No speech detected or unclear audio.",
@@ -213,10 +288,6 @@ function HrInterviewPage() {
         return;
       }
 
-      console.log("💬 Transcript:", data.transcript);
-
-      // 🎯 Send transcript for feedback
-      console.log("🧠 Sending transcript to /api/feedback...");
       const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -230,7 +301,6 @@ function HrInterviewPage() {
       console.log("🤖 Feedback API response:", feedbackData);
 
       if (!feedbackRes.ok) {
-        console.error("❌ Feedback API failed:", feedbackData);
         setFeedback({
           score: 0,
           feedback: feedbackData?.message || "Feedback error",
@@ -238,7 +308,6 @@ function HrInterviewPage() {
         return;
       }
 
-      // 🧾 Validate and update UI
       const numericScore = Number(feedbackData?.feedback?.score || 0);
       setFeedback(feedbackData.feedback);
       setScoreTotal((prev) => prev + numericScore);
@@ -266,9 +335,62 @@ function HrInterviewPage() {
     setQuestionIndex((prev) => prev + 1);
   };
 
+  const restartCamera = async () => {
+    console.log("🔄 Restarting camera...");
+    setCameraReady(false);
+
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    setTimeout(() => {
+      requestPermissions();
+    }, 500);
+
+    setIson(true);
+  };
+
+  const handleHRComplete = async (status, score) => {
+    try {
+      const maxScore = totalQuestions * 10;
+      const scorePercent = Math.round((score / maxScore) * 100);
+
+      await fetch("http://localhost:7656/user/api/v1/submit-hr-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          hrStatus: status,
+          hrScore: scorePercent,
+        }),
+      });
+
+      alert(`✅ HR Round saved successfully (${status})`);
+
+      await axios.get("http://localhost:7656/user/api/v1/interview-rounds", {
+        withCredentials: true,
+      });
+    } catch (err) {
+      console.error("Failed to save HR score:", err);
+      alert("Failed to save HR round. Try again!");
+    }
+  };
+
   return (
     <div className="myapp">
       <h1>Live Mock Interview</h1>
+
+      {!ison && show && !cameraReady && permissionsGranted && (
+        <div className="camera-status">
+          <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
+            On Camera
+          </button>
+        </div>
+      )}
 
       {!permissionsGranted && (
         <div className="permission-section">
@@ -308,10 +430,14 @@ function HrInterviewPage() {
           </div>
 
           <div className="question-section">
-            <h2>
-              Question {questionIndex + 1} of {totalQuestions}:
-            </h2>
-            <p>{question}</p>
+            {ison && (
+              <>
+                <h2>
+                  Question {questionIndex + 1} of {totalQuestions}:
+                </h2>
+                <p>{question}</p>
+              </>
+            )}
             {!recording && (
               <button onClick={startRecording}>Start Recording Answer</button>
             )}
@@ -319,6 +445,7 @@ function HrInterviewPage() {
               <button onClick={stopRecording}>Stop & Submit Answer</button>
             )}
           </div>
+
           {feedback && (
             <div className="feedback-section">
               <h2>Feedback</h2>
@@ -329,28 +456,23 @@ function HrInterviewPage() {
                 <strong>Comments:</strong> {feedback.feedback}
               </p>
 
-              {/* Show Next Question if not last */}
               {questionIndex + 1 < totalQuestions && (
                 <button onClick={nextQuestion}>Next Question</button>
               )}
 
-              {/* Show Summary if last question */}
               {questionIndex + 1 >= totalQuestions && (
                 <div>
                   <h2>HR Round Completed 🎯</h2>
-
                   <p>
                     Total Score: {scoreTotal}/{totalQuestions * 10} (
                     {Math.round((scoreTotal / (totalQuestions * 10)) * 100)}%)
                   </p>
-
                   <p>
                     Eligibility:{" "}
                     {scoreTotal > (totalQuestions * 10) / 2
                       ? "Eligible ✅"
                       : "Not Eligible ❌"}
                   </p>
-
                   {scoreTotal > (totalQuestions * 10) / 2 ? (
                     <button
                       onClick={async () => {
@@ -380,4 +502,5 @@ function HrInterviewPage() {
     </div>
   );
 }
-export default HrInterviewPage
+
+export default HrInterviewPage;

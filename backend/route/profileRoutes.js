@@ -20,5 +20,5 @@ router.post(
   ]),
   updateProfile
 ); //user/api/v1/profile/update
-router.get("/getProfile",authMiddleware,getProfile); 
+router.get("/getProfile", authMiddleware, getProfile);
 export default router;

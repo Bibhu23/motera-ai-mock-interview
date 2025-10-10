@@ -4,27 +4,25 @@ const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemi
 // it basically call the gemini API and return the text response
 
 async function callGemini(prompt) {
-    if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
+    if (!process.env.GEMINI_API_KEY)
+        throw new Error("GEMINI_API_KEY is not set");
+
     const body = { contents: [{ parts: [{ text: prompt }] }] };
 
     try {
         const res = await axios.post(GEMINI_URL, body, {
             headers: {
                 "Content-Type": "application/json",
-
-                // Use API key header (not Bearer) per Gemini API
                 "X-goog-api-key": process.env.GEMINI_API_KEY,
             },
             timeout: 40000,
         });
         const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text?.trim();
-        const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        return text?.trim();
     } catch (error) {
+        console.error("Gemini API error:", error.response?.data || error.message);
         throw new Error("Gemini API error: " + (error.response?.data || error.message));
     }
-
 
 
 }

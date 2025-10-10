@@ -23,7 +23,6 @@ export const getProfile = async (req, res) => {
 // POST /user/api/v1/profile/update
 
 
-
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id; // ✅ from token (no need from frontend)

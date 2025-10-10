@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import Sidebar from "../components/Sidebar";
+// import DashboardNavbar from "./DashboardNavbar";
 import ProgressBar from "../components/ProgressBar";
 import { AppContext } from "../context/Appcontext";
-import { uploadResume, getProfile, updateProfile } from "../services/profileService";
+import { uploadResume, saveProfile, getProfile } from "../services/profileService";
 import "./ProfilePage.css";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ const ProfilePage = () => {
         certifications: [],
 
     });
+
     const [completion, setCompletion] = useState(0);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
@@ -43,10 +45,6 @@ const ProfilePage = () => {
             //trim only the String
             if (typeof v === "string") return v.trim() !== ""; // strings
             return v != null; // other values (like numbers)
-            if (Array.isArray(v)) return v.length > 0;
-            if (typeof v === "string") return v.trim() !== "";
-            if (v && typeof v === "object") return Object.keys(v).length > 0;
-            return !!v; // handles numbers, booleans
         });
         setCompletion(Math.round((filled.length / fields.length) * 100));
     }, [profile]);

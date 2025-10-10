@@ -1,265 +1,265 @@
 :root {
-    --navbar-height: 64px;
-    /* adjust to your navbar height */
-    --footer-height: 0px;
-    /* adjust if you have a footer */
-    --sidebar-width: 250px;
-    /* desktop sidebar width */
-    --gap: 24px;
-    --bg: #f7f8fa;
-    --card-bg: #ffffff;
-    --muted: #64748b;
-    --accent: #2b6cb0;
-    --radius: 12px;
-    --shadow-sm: 0 4px 16px rgba(2, 6, 23, 0.06);
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --navbar-height: 64px;
+  /* adjust to your navbar height */
+  --footer-height: 0px;
+  /* adjust if you have a footer */
+  --sidebar-width: 250px;
+  /* desktop sidebar width */
+  --gap: 24px;
+  --bg: #f7f8fa;
+  --card-bg: #ffffff;
+  --muted: #64748b;
+  --accent: #2b6cb0;
+  --radius: 12px;
+  --shadow-sm: 0 4px 16px rgba(2, 6, 23, 0.06);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* -------------------- Page layout -------------------- */
 /* Desktop: two-column layout (sidebar + main) */
 .dashboard {
-    display: flex;
-    min-height: 100vh;
-    background: var(--bg);
-    gap: var(--gap);
-    align-items: flex-start;
-    padding: 0;
-    box-sizing: border-box;
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  gap: var(--gap);
+  align-items: flex-start;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* -------------------- Sidebar -------------------- */
 /* Sidebar sits below the navbar (sticky) and won't overlap it */
 .sidebar {
-    width: var(--sidebar-width);
-    position: sticky;
-    top: var(--navbar-height);
-    height: calc(100vh - var(--navbar-height) - var(--footer-height));
-    background: linear-gradient(180deg, #263544, #1f2d3a);
-    color: #fff;
-    padding: 20px;
-    border-right: 1px solid rgba(255, 255, 255, 0.04);
-    box-shadow: var(--shadow-sm);
-    overflow: auto;
+  width: var(--sidebar-width);
+  position: sticky;
+  top: var(--navbar-height);
+  height: calc(100vh - var(--navbar-height) - var(--footer-height));
+  background: linear-gradient(180deg, #263544, #1f2d3a);
+  color: #fff;
+  padding: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: var(--shadow-sm);
+  overflow: auto;
 }
 
 /* Sidebar content */
 .sidebar h2 {
-    margin: 0 0 16px 0;
-    font-size: 20px;
-    letter-spacing: 0.2px;
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  letter-spacing: 0.2px;
 }
 
 .sidebar ul {
-    margin: 12px 0 0;
-    padding: 0;
-    list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .sidebar li {
-    margin: 10px 0;
+  margin: 10px 0;
 }
 
 .sidebar a {
-    display: block;
-    color: #e6eef6;
-    text-decoration: none;
-    padding: 8px 10px;
-    border-radius: 8px;
-    transition: background .18s, color .18s;
+  display: block;
+  color: #e6eef6;
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background .18s, color .18s;
 }
 
 .sidebar a:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
 }
 
 /* -------------------- Main content -------------------- */
 /* Main should reserve space for sidebar and not be overlapped by navbar */
 .main {
-    flex: 1;
-    padding: calc(var(--navbar-height) + 24px) 28px 28px 28px;
-    /* push below navbar */
-    box-sizing: border-box;
-    min-height: 100vh;
+  flex: 1;
+  padding: calc(var(--navbar-height) + 24px) 28px 28px 28px;
+  /* push below navbar */
+  box-sizing: border-box;
+  min-height: 100vh;
 }
 
 /* If your app renders a fixed navbar with higher z-index, this keeps content visible below it */
 @media (max-width: 1024px) {
-    .main {
-        padding-top: calc(var(--navbar-height) + 18px);
-    }
+  .main {
+    padding-top: calc(var(--navbar-height) + 18px);
+  }
 }
 
 /* -------------------- Cards grid (3 columns) -------------------- */
 .dashboard-content {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    /* 3 cards horizontally on wide screens */
-    gap: 24px;
-    width: 100%;
-    margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 cards horizontally on wide screens */
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 28px;
 }
 
 /* Individual card */
 .card {
-    background: var(--card-bg);
-    padding: 22px;
-    border-radius: var(--radius);
-    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
-    text-align: left;
-    min-height: 180px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  background: var(--card-bg);
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
+  text-align: left;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card .top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    color: var(--muted);
-    font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .card h1 {
-    margin: 6px 0 8px 0;
-    font-size: 28px;
-    color: #0f172a;
+  margin: 6px 0 8px 0;
+  font-size: 28px;
+  color: #0f172a;
 }
 
 .card p {
-    margin: 0;
-    color: var(--muted);
+  margin: 0;
+  color: var(--muted);
 }
 
 /* Summary card variant */
 .card.summary {
-    text-align: left;
+  text-align: left;
 }
 
 /* -------------------- Charts -------------------- */
 .chart-row {
-    display: flex;
-    gap: 24px;
-    margin-top: 8px;
-    align-items: stretch;
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+  align-items: stretch;
 }
 
 .chart-box {
-    flex: 1;
-    background: var(--card-bg);
-    padding: 18px;
-    border-radius: var(--radius);
-    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.04);
+  flex: 1;
+  background: var(--card-bg);
+  padding: 18px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.04);
 }
 
 .chart-box canvas {
-    width: 100% !important;
-    height: 320px !important;
-    max-height: 420px;
-    display: block;
+  width: 100% !important;
+  height: 320px !important;
+  max-height: 420px;
+  display: block;
 }
 
 /* -------------------- Responsive behavior -------------------- */
 /* Medium screens: 2 columns */
 @media (max-width: 1200px) {
-    .dashboard-content {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .dashboard-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-    /* sidebar narrower on medium screens */
-    .sidebar {
-        width: 220px;
-    }
+  /* sidebar narrower on medium screens */
+  .sidebar {
+    width: 220px;
+  }
 
-    .main {
-        padding-left: 22px;
-        padding-right: 22px;
-    }
+  .main {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
 }
 
 /* Small screens: stack sidebar above main, cards 1 column */
 @media (max-width: 768px) {
-    .dashboard {
-        flex-direction: column;
-    }
+  .dashboard {
+    flex-direction: column;
+  }
 
-    .sidebar {
-        position: relative;
-        top: 0;
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    }
+  .sidebar {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  }
 
-    .main {
-        margin-left: 0;
-        padding: 16px;
-    }
+  .main {
+    margin-left: 0;
+    padding: 16px;
+  }
 
-    .dashboard-content {
-        grid-template-columns: 1fr;
-    }
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
 
-    .chart-row {
-        flex-direction: column;
-    }
+  .chart-row {
+    flex-direction: column;
+  }
 }
 
 /* Very small screens adjustments */
 @media (max-width: 480px) {
-    :root {
-        --sidebar-width: 100%;
-    }
+  :root {
+    --sidebar-width: 100%;
+  }
 
-    .sidebar {
-        padding: 14px;
-    }
+  .sidebar {
+    padding: 14px;
+  }
 
-    .main {
-        padding: 12px;
-    }
+  .main {
+    padding: 12px;
+  }
 
-    .card {
-        padding: 16px;
-        min-height: 140px;
-    }
+  .card {
+    padding: 16px;
+    min-height: 140px;
+  }
 
-    .chart-box canvas {
-        height: 240px !important;
-    }
+  .chart-box canvas {
+    height: 240px !important;
+  }
 }
 
 /* -------------------- Accessibility & utilities -------------------- */
 .badge {
-    display: inline-block;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 0.85rem;
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .bg-success {
-    background: #16a34a;
-    color: #fff;
+  background: #16a34a;
+  color: #fff;
 }
 
 .bg-warning {
-    background: #f59e0b;
-    color: #fff;
+  background: #f59e0b;
+  color: #fff;
 }
 
 /* ensure long lists don't push page out of view */
 .sidebar::-webkit-scrollbar,
 .main::-webkit-scrollbar {
-    height: 8px;
-    width: 8px;
+  height: 8px;
+  width: 8px;
 }
 
 .sidebar::-webkit-scrollbar-thumb,
 .main::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.12);
-    border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
 }
