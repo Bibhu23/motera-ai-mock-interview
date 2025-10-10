@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useContext } from "react";
 import Sidebar from "../components/Sidebar";
-// import DashboardNavbar from "./DashboardNavbar";
 import ProgressBar from "../components/ProgressBar";
 import { AppContext } from "../context/Appcontext";
-import { uploadResume, saveProfile, getProfile } from "../services/profileService";
+import { uploadResume, getProfile, updateProfile } from "../services/profileService";
 import "./ProfilePage.css";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 
 const ProfilePage = () => {
- 
+
     const { login } = useContext(AppContext);
-    const navigate=useNavigate();
-  //also upload resume here
+    const navigate = useNavigate();
+    //also upload resume here
 
     const [profile, setProfile] = useState({
         fullName: "",
@@ -28,11 +27,10 @@ const ProfilePage = () => {
         hobbies: "",
         workHistory: [],
         education: [],
-        resume:null,
+        resume: null,
         certifications: [],
-       
-    });
 
+    });
     const [completion, setCompletion] = useState(0);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
@@ -45,6 +43,10 @@ const ProfilePage = () => {
             //trim only the String
             if (typeof v === "string") return v.trim() !== ""; // strings
             return v != null; // other values (like numbers)
+            if (Array.isArray(v)) return v.length > 0;
+            if (typeof v === "string") return v.trim() !== "";
+            if (v && typeof v === "object") return Object.keys(v).length > 0;
+            return !!v; // handles numbers, booleans
         });
         setCompletion(Math.round((filled.length / fields.length) * 100));
     }, [profile]);
@@ -54,37 +56,37 @@ const ProfilePage = () => {
         async function fetchData() {
             try {
                 const data = await getProfile();
-            if (data){ 
-                console.log(data);
-                
-                setProfile(data);
-            }
+                if (data) {
+                    console.log(data);
+
+                    setProfile(data);
+                }
             } catch (err) {
                 //for the first time it will execute
                 if (err.response && err.response.status === 404) {
                     // First-time user, show empty form
                     setProfile({
-                      fullName: "",
-                      email: "",
-                      phone: "",
-                      title: "",
-                      city: "",
-                      country: "",
-                      experience: "",
-                      summary: "",
-                      skills: "",
-                      hobbies: "",
-                      workHistory: [],
-                      education: [],
-                      resume: null,
-                      certifications: [],
+                        fullName: "",
+                        email: "",
+                        phone: "",
+                        title: "",
+                        city: "",
+                        country: "",
+                        experience: "",
+                        summary: "",
+                        skills: "",
+                        hobbies: "",
+                        workHistory: [],
+                        education: [],
+                        resume: null,
+                        certifications: [],
                     });
-                  }else{
+                } else {
                     console.log(err);
-                    
-                  }
+
+                }
             }
-            
+
         }
         fetchData();
     }, []);
@@ -93,7 +95,7 @@ const ProfilePage = () => {
     const handleFileUpload = async (e) => {
         const uploadedFile = e.target.files[0];
         if (!uploadedFile) return;
-        
+
         /*setLoading(true);
         setMessage("Analyzing your resume...");
         try {
@@ -105,11 +107,11 @@ const ProfilePage = () => {
         } finally {
             setLoading(false);
         }*/
-       setProfile({...profile,resume: e.target.files[0]})
+        setProfile({ ...profile, resume: e.target.files[0] })
     };
-     //handle certification upload
-    const handleCertificationUpload=(e)=>{
-        setProfile({...profile,certifications: e.target.files[0]})
+    //handle certification upload
+    const handleCertificationUpload = (e) => {
+        setProfile({ ...profile, certifications: e.target.files[0] })
     }
 
     // Handle input change
@@ -146,7 +148,7 @@ const ProfilePage = () => {
             setLoading(true);
             await saveProfile(profile);
             setMessage("Profile saved successfully!");
-           navigate("/profile/view")
+            navigate("/profile/view")
         } catch (err) {
             setMessage("Failed to save profile.");
         } finally {

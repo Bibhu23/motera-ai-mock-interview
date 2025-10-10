@@ -2,15 +2,16 @@ import React, { useContext, useState } from "react";
 import Gpi from "../Gpi";
 import { AppContext } from "../context/Appcontext";
 import "./Login.css"; // Import the CSS file
-import bgImg from "../assets/moterabac.jfif"
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import bgImg from "../assets/moterabac.jfif";
+import { Link, useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+
 export default function Login() {
-    const { setUser,setLogin } = useContext(AppContext);
+    const { setUser, setLogin } = useContext(AppContext);
     const navigate = useNavigate();
     const [loginForm, setLoginForm] = useState({
         email: "",
-        password: "",   
+        password: "",
     });
 
     const handleLogin = async (e) => {
@@ -29,16 +30,19 @@ export default function Login() {
             }
             console.log("Login successful", res.data);
             setLogin(true);
-            navigate("/")
+            navigate("/");
         } catch (err) {
-              setLogin(false);
+            setLogin(false);
             alert("Login failed: " + (err.response?.data?.message || err.message));
-          
         }
     };
 
     const handleLoginChange = (e) => {
         setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+    };
+
+    const handleGoogleLogin = () => {
+        window.location.href = "http://localhost:7656/auth/google";
     };
 
     return (
@@ -87,6 +91,13 @@ export default function Login() {
                         Login
                     </button>
                 </form>
+
+                <div className="divider">or</div>
+
+                <button className="google-btn" onClick={handleGoogleLogin}>
+                    <FcGoogle className="google-icon" />
+                    <span>Continue with Google</span>
+                </button>
 
                 <p className="register">
                     Not Registered Yet? <Link to="/signup">register</Link>

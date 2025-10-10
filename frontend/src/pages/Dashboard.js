@@ -140,7 +140,7 @@ export default function Dashboard() {
                                     {r.status}
                                 </span>
                             </div>
-
+                            {/* <h1>{r.score !== null && r.score !== undefined ? `${r.score}%` : "Pending"}</h1> */}
                             <h1>{r.score !== null ? `${r.score}%` : "Pending"}</h1>
                             <p>{r.date ? new Date(r.date).toLocaleDateString() : "-"}</p>
                         </div>

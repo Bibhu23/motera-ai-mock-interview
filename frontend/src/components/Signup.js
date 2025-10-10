@@ -21,11 +21,6 @@ export default function Signup() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (form.password !== form.confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
-
         try {
             const formData = new FormData();
             Object.keys(form).forEach((key) => {
@@ -43,7 +38,7 @@ export default function Signup() {
     };
 
     const handleGoogleSignup = () => {
-        window.location.href = "/auth/google"; // Google OAuth endpoint
+        window.location.href = "http://localhost:7656/auth/google";
     };
 
     return (

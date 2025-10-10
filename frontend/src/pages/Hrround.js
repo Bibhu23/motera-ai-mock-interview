@@ -1,6 +1,9 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Hrround.css";
+import * as faceapi from 'face-api.js'
+
 
 import { FaSadCry } from "react-icons/fa";
 
@@ -8,7 +11,7 @@ function HrInterviewPage() {
   const videoRef = useRef();
   const [question, setQuestion] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(10);
+  const [totalQuestions, setTotalQuestions] = useState(3);
   const [scoreTotal, setScoreTotal] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -18,38 +21,30 @@ function HrInterviewPage() {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [mediaStream, setMediaStream] = useState(null);
-  const [cameraReady, setCameraReady] = useState(false);
-    const [show, setShow] = useState(false);
-  const [ison, setIson] = useState(false);
-
   const navigate = useNavigate();
 
-  // ---------------- CAMERA READY EVENT ---------------- 
   useEffect(() => {
-    const videoEl = videoRef.current;
-    if (!videoEl) return;
-
-    const handlePlaying = () => {
-      console.log("✅ Camera feed started");
-      setCameraReady(true);
-    };
-
-    videoEl.addEventListener("playing", handlePlaying);
-
-    return () => videoEl.removeEventListener("playing", handlePlaying);
-  }, []);
-
-  useEffect(() => {
-    requestPermissions();
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
+    const handleVisibility = () => {
+      if (document.hidden) {
+        alert("⚠️ Do not switch tabs during the interview!");
       }
     };
-  }, [mediaStream]);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  // ---------------- DEVICE ORIENTATION DETECTION ----------------
+  useEffect(() => {
+    const handleOrientation = () => {
+      if (window.screen.orientation.angle !== 0) {
+        alert("⚠️ Keep your device upright during the interview!");
+      }
+    };
+    window.addEventListener("orientationchange", handleOrientation);
+    return () =>
+      window.removeEventListener("orientationchange", handleOrientation);
+  }, []);
 
   useEffect(() => {
     if (interviewStarted && questions.length > 0) {
@@ -57,66 +52,34 @@ function HrInterviewPage() {
     }
   }, [questionIndex, interviewStarted, questions]);
 
-const requestPermissions = async () => {
-  console.log("Requesting camera and microphone permissions...");
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { 
-        facingMode: "user",
-        width: { ideal: 640 },
-        height: { ideal: 480 }
-      },
-      audio: true,
-    });
+  const requestPermissions = () => {
+    console.log("Requesting camera and microphone permissions...");
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        console.log("Permissions granted, media stream ready");
 
-    console.log("✅ Permissions granted, media stream ready");
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-
-      // Force video playback
-      videoRef.current.onloadedmetadata = async () => {
-        try {
-          await videoRef.current.play();
-          console.log("🎥 Video playback started immediately");
-        } catch (playError) {
-          console.warn("⚠️ Autoplay blocked, user interaction required");
-          // Don't retry automatically - let user interaction handle it
+          // ✅ force video to play
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play().catch((err) => {
+              console.warn("Autoplay blocked:", err);
+            });
+          };
         }
-      };
 
-      // Additional event listeners for better error handling
-      videoRef.current.onerror = (error) => {
-        console.error("Video element error:", error);
-      };
-
-      videoRef.current.onstalled = () => {
-        console.warn("Video stream stalled, attempting to restart...");
-        if (videoRef.current && videoRef.current.paused) {
-          videoRef.current.play().catch(console.error);
-        }
-      };
-    }
-
-    setMediaStream(stream);
-    setPermissionsGranted(true);
-  } catch (err) {
-    console.error("Permission error:", err);
-    let errorMessage = "Please allow camera and microphone access to continue.";
-    
-    if (err.name === 'NotAllowedError') {
-      errorMessage = "Camera and microphone access was denied. Please refresh the page and allow access.";
-    } else if (err.name === 'NotFoundError') {
-      errorMessage = "No camera or microphone found. Please check your device connections.";
-    } else if (err.name === 'NotReadableError') {
-      errorMessage = "Camera or microphone is already in use by another application.";
-    }
-    
-    alert(errorMessage);
-  }
-};
-
-
+        setMediaStream(stream);
+        setPermissionsGranted(true);
+      })
+      .catch((err) => {
+        console.error("Permission error:", err);
+        alert(
+          "Please allow camera and microphone access to continue with the interview."
+        );
+      });
+  };
 
   const startInterview = async () => {
     if (!permissionsGranted) {
@@ -135,7 +98,6 @@ const requestPermissions = async () => {
       setQuestions(data);
       setInterviewStarted(true);
       setQuestionIndex(0);
-        setShow(true);
     } catch (err) {
       console.error("Failed to fetch questions:", err);
       alert("Failed to load interview questions. Please try again.");
@@ -289,51 +251,24 @@ const requestPermissions = async () => {
     }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     setFeedback(null);
     if (questionIndex + 1 >= totalQuestions) {
       const maxScore = totalQuestions * 10;
       const pct = Math.round((scoreTotal / maxScore) * 100);
-      alert(`Interview finished! Overall correctness: ${pct}%`);
+      const status = pct >= 50 ? "Pass" : "Fail";
+
+      await handleHRComplete(status, scoreTotal);
+      alert(`HR Round Finished! Score: ${pct}% | Status: ${status}`);
       navigate("/dashboard");
       return;
     }
     setQuestionIndex((prev) => prev + 1);
   };
 
-  const restartCamera = async () => {
-    console.log("🔄 Restarting camera...");
-    setCameraReady(false);
-    
-    // Stop existing stream
-    if (mediaStream) {
-      mediaStream.getTracks().forEach((track) => track.stop());
-    }
-    
-    // Clear video element
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    
-    // Wait a moment then restart
-    setTimeout(() => {
-      requestPermissions();
-    }, 500);
-        setIson(true);
-  };
-
   return (
     <div className="myapp">
       <h1>Live Mock Interview</h1>
-
-       {!ison && <> ( { show && <>({!cameraReady && permissionsGranted && (
-        <div className="camera-status">
-          <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
-            On Camera
-          </button>
-        </div>
-      )})
-      </>} )</>}
 
       {!permissionsGranted && (
         <div className="permission-section">
@@ -373,14 +308,10 @@ const requestPermissions = async () => {
           </div>
 
           <div className="question-section">
-           {ison && (
-              <>
-                <h2>
-                  Question {questionIndex + 1} of {totalQuestions}:
-                </h2>
-                <p>{question}</p>
-              </>
-            )}
+            <h2>
+              Question {questionIndex + 1} of {totalQuestions}:
+            </h2>
+            <p>{question}</p>
             {!recording && (
               <button onClick={startRecording}>Start Recording Answer</button>
             )}
@@ -388,7 +319,6 @@ const requestPermissions = async () => {
               <button onClick={stopRecording}>Stop & Submit Answer</button>
             )}
           </div>
-
           {feedback && (
             <div className="feedback-section">
               <h2>Feedback</h2>
@@ -398,18 +328,56 @@ const requestPermissions = async () => {
               <p>
                 <strong>Comments:</strong> {feedback.feedback}
               </p>
-              <button onClick={nextQuestion}>
-                {questionIndex + 1 >= totalQuestions
-                  ? "Finish Interview"
-                  : "Next Question"}
-              </button>
+
+              {/* Show Next Question if not last */}
+              {questionIndex + 1 < totalQuestions && (
+                <button onClick={nextQuestion}>Next Question</button>
+              )}
+
+              {/* Show Summary if last question */}
+              {questionIndex + 1 >= totalQuestions && (
+                <div>
+                  <h2>HR Round Completed 🎯</h2>
+
+                  <p>
+                    Total Score: {scoreTotal}/{totalQuestions * 10} (
+                    {Math.round((scoreTotal / (totalQuestions * 10)) * 100)}%)
+                  </p>
+
+                  <p>
+                    Eligibility:{" "}
+                    {scoreTotal > (totalQuestions * 10) / 2
+                      ? "Eligible ✅"
+                      : "Not Eligible ❌"}
+                  </p>
+
+                  {scoreTotal > (totalQuestions * 10) / 2 ? (
+                    <button
+                      onClick={async () => {
+                        await handleHRComplete("Pass", scoreTotal);
+                        navigate("/dashboard");
+                      }}
+                    >
+                      Finish HR Round
+                    </button>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        await handleHRComplete("Fail", scoreTotal);
+                        alert("Candidate not eligible for further rounds.");
+                        navigate("/dashboard");
+                      }}
+                    >
+                      Finish HR Round
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
-        
         </>
       )}
     </div>
   );
 }
-
-export default HrInterviewPage;
+export default HrInterviewPage

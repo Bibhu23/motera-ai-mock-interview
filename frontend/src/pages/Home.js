@@ -88,14 +88,6 @@ const Home = () => {
     if (dotLottie) dotLottie.pause();
   };
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch((err) => {
-        console.log("Autoplay prevented:", err);
-      });
-    }
-  }, []);
-
   const handleVideoEnd = () => {
     navigate("/round1");
   };

@@ -1,12 +1,15 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./LiveVideoInterviewPage.css";
+import * as faceapi from 'face-api.js'
 
 function LiveVideoInterviewPage() {
   const videoRef = useRef(null);
+  const videoRef = useRef(null);
   const [question, setQuestion] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(15);
+  const [totalQuestions, setTotalQuestions] = useState(5);
   const [scoreTotal, setScoreTotal] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -19,6 +22,14 @@ function LiveVideoInterviewPage() {
   const [cameraReady, setCameraReady] = useState(false);
   const [show, setShow] = useState(false);
   const [ison, setIson] = useState(false);
+
+  const [cameraReady, setCameraReady] = useState(false);
+  const [show, setShow] = useState(false);
+  const [ison, setIson] = useState(false);
+  const [faceMissingCount, setFaceMissingCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [timerActive, setTimerActive] = useState(false);
+
 
   const navigate = useNavigate();
 
@@ -38,10 +49,84 @@ function LiveVideoInterviewPage() {
   }, []);
 
   // ---------------- REQUEST PERMISSIONS ----------------
+  // ---------------- REQUEST CAMERA & MICROPHONE ----------------
+  const requestPermissions = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: 640, height: 480 },
+        audio: true,
+      });
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setMediaStream(stream);
+      setPermissionsGranted(true);
+    } catch (err) {
+      alert("Camera and microphone access required!");
+      console.error(err);
+    }
+  };
+
+  // ---------------- CAMERA READY EVENT ----------------
   useEffect(() => {
-    requestPermissions();
+    const handlePlaying = () => {
+      console.log("✅ Camera feed started");
+      setCameraReady(true);
+    };
+
+    if (videoRef.current) {
+      videoRef.current.addEventListener("playing", handlePlaying);
+    }
+
+    return () => {
+      if (videoRef.current)
+        videoRef.current.removeEventListener("playing", handlePlaying);
+    };
   }, []);
 
+  // ---------------- LOAD FACE API MODELS ----------------
+  useEffect(() => {
+    const loadModels = async () => {
+      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+      console.log("✅ Face-api models loaded");
+    };
+    loadModels();
+  }, []);
+
+  // ---------------- FACE DETECTION ----------------
+  useEffect(() => {
+    let localMissingCount = 0;
+
+    let interval = setInterval(async () => {
+      if (!videoRef.current) return;
+      const detection = await faceapi.detectSingleFace(
+        videoRef.current,
+        new faceapi.TinyFaceDetectorOptions()
+      );
+      if (!detection) {
+        localMissingCount++;
+        if (localMissingCount >= 3) {
+          alert("⚠️ Please stay in front of the camera!");
+          localMissingCount = 0; // reset after alert
+        }
+      } else {
+        localMissingCount = 0;
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [cameraReady, faceMissingCount]);
+
+  // ---------------- TAB VISIBILITY DETECTION ----------------
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        alert("⚠️ Do not switch tabs during the interview!");
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  // ---------------- DEVICE ORIENTATION DETECTION ----------------
   useEffect(() => {
     return () => {
       if (mediaStream) {
@@ -113,107 +198,133 @@ function LiveVideoInterviewPage() {
   };
 
   // ---------------- INTERVIEW QUESTIONS ----------------
-  useEffect(() => {
-    if (interviewStarted && questions.length > 0) {
-      setQuestion(questions[questionIndex]?.question || "No question found");
-    }
-  }, [questionIndex, interviewStarted, questions]);
-
-  const startInterview = async () => {
-    if (!permissionsGranted) {
-      alert("Please allow camera and microphone access first.");
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `http://localhost:7656/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
-
-      if (!Array.isArray(data)) throw new Error("Invalid questions response");
-      setQuestions(data);
-      setInterviewStarted(true);
-      setQuestionIndex(0);
-      setShow(true);
-    } catch (err) {
-      console.error("Failed to fetch questions:", err);
-      alert("Failed to load interview questions. Please try again.");
+  const handleOrientation = () => {
+    if (window.screen.orientation.angle !== 0) {
+      alert("⚠️ Keep your device upright during the interview!");
     }
   };
+  window.addEventListener("orientationchange", handleOrientation);
+  return () =>
+    window.removeEventListener("orientationchange", handleOrientation);
+}, []);
 
-  // ---------------- RECORDING LOGIC ----------------
-  const startRecording = () => {
-    if (!mediaStream) {
-      alert("No media stream available. Please allow camera and mic.");
-      return;
-    }
 
-    const audioTracks = mediaStream.getAudioTracks();
-    if (!audioTracks || audioTracks.length === 0) {
-      alert("No microphone detected or permission denied.");
-      return;
-    }
+// ---------------- INTERVIEW QUESTIONS ----------------
+useEffect(() => {
+  if (interviewStarted && questions.length > 0) {
+    setQuestion(questions[questionIndex]?.question || "No question found");
+  }
+}, [questionIndex, interviewStarted, questions]);
 
-    const audioStream = new MediaStream([audioTracks[0]]);
-    let recorder;
-    let localChunks = [];
+const startInterview = async () => {
+  if (!permissionsGranted) {
+    alert("Please allow camera and microphone access first.");
+    return;
+  }
 
-    try {
-      recorder = new MediaRecorder(audioStream, {
-        mimeType: "audio/webm;codecs=opus",
-      });
-    } catch (err) {
-      console.error("MediaRecorder not supported:", err);
-      alert(
-        "Recording is not supported in this browser. Use latest Chrome/Edge."
-      );
-      return;
-    }
+  try {
+    const res = await fetch(
+      `http://localhost:7656/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
+      { credentials: "include" }
+    );
+    const data = await res.json();
 
-    recorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) localChunks.push(e.data);
-    };
+    if (!Array.isArray(data)) throw new Error("Invalid questions response");
+    setQuestions(data);
+    setInterviewStarted(true);
+    setQuestionIndex(0);
+    setShow(true);
+    setShow(true);
+  } catch (err) {
+    console.error("Failed to fetch questions:", err);
+    alert("Failed to load interview questions. Please try again.");
+  }
+};
 
-    recorder.onstop = async () => {
-      if (!localChunks || localChunks.length === 0) {
-        setFeedback({ score: 0, feedback: "No valid audio recorded." });
-        return;
-      }
-      setRecordedChunks(localChunks);
-      await handleUpload(localChunks);
-    };
+// ---------------- RECORDING LOGIC ----------------
+const startRecording = () => {
+  if (!mediaStream) {
+    alert("No media stream available. Please allow camera and mic.");
+    return;
+  }
 
-    recorder.start();
-    setMediaRecorder(recorder);
-    setRecording(true);
+  const audioTracks = mediaStream.getAudioTracks();
+  if (!audioTracks || audioTracks.length === 0) {
+    alert("No microphone detected or permission denied.");
+    return;
+  }
+
+  const audioStream = new MediaStream([audioTracks[0]]);
+  let recorder;
+  let localChunks = [];
+
+
+  try {
+    recorder = new MediaRecorder(audioStream, {
+      mimeType: "audio/webm;codecs=opus",
+    });
+  } catch (err) {
+    console.error("MediaRecorder not supported:", err);
+    alert(
+      "Recording is not supported in this browser. Use latest Chrome/Edge."
+    );
+    return;
+  }
+
+  recorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) localChunks.push(e.data);
+    if (e.data && e.data.size > 0) localChunks.push(e.data);
   };
 
-  const stopRecording = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-      setRecording(false);
+  recorder.onstop = async () => {
+    if (!localChunks || localChunks.length === 0) {
+      setFeedback({ score: 0, feedback: "No valid audio recorded." });
+      return;
     }
+    setRecordedChunks(localChunks);
+    await handleUpload(localChunks);
+    if (!localChunks || localChunks.length === 0) {
+      setFeedback({ score: 0, feedback: "No valid audio recorded." });
+      return;
+    }
+    setRecordedChunks(localChunks);
+    await handleUpload(localChunks);
   };
 
-  // ---------------- UPLOAD & TRANSCRIBE ----------------
-  const handleUpload = async (chunks) => {
-    if (!chunks || chunks.length === 0) return;
+  recorder.start();
+  recorder.start();
+  setMediaRecorder(recorder);
+  setRecording(true);
+};
 
-    const blob = new Blob(chunks, { type: "audio/webm" });
-    const formData = new FormData();
-    formData.append("audio", blob, "answer.webm");
-    formData.append("question", question);
+const stopRecording = () => {
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+    setRecording(false);
+    mediaRecorder.stop();
+    setRecording(false);
+  }
+};
 
-    try {
-      const res = await fetch("http://localhost:7656/api/transcribe", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      const data = await res.json();
+// ---------------- UPLOAD & TRANSCRIBE ----------------
+const handleUpload = async (chunks) => {
+  if (!chunks || chunks.length === 0) return;
+  if (!chunks || chunks.length === 0) return;
 
+  const blob = new Blob(chunks, { type: "audio/webm" });
+  const formData = new FormData();
+  formData.append("audio", blob, "answer.webm");
+  formData.append("question", question);
+
+  try {
+    const res = await fetch("http://localhost:7656/api/transcribe", {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.transcript) {
       if (!res.ok || !data.transcript) {
         setFeedback({
           score: 0,
@@ -240,7 +351,11 @@ function LiveVideoInterviewPage() {
       const numericScore = Number(feedbackData?.feedback?.score || 0);
       setFeedback(feedbackData.feedback);
       setScoreTotal((prev) => prev + numericScore);
+
+      // Stop timer when feedback arrives
+      setTimerActive(false);
     } catch (err) {
+      console.error("handleUpload error:", err);
       console.error("handleUpload error:", err);
       setFeedback({
         score: 0,
@@ -249,13 +364,25 @@ function LiveVideoInterviewPage() {
     }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     setFeedback(null);
+    setQuestionIndex(prev => prev + 1);  // moves to next question
+    setTimerActive(true);  // restart timer for next question
+
     if (questionIndex + 1 >= totalQuestions) {
       const maxScore = totalQuestions * 10;
       const pct = Math.round((scoreTotal / maxScore) * 100);
-      alert(`Interview finished! Overall correctness: ${pct}%`);
-      navigate("/dashboard");
+
+      const eligible = pct > 50;
+
+      alert(
+        `🎯 Interview finished! Overall correctness: ${pct}%.\n` +
+        `Candidate is ${eligible ? "eligible ✅" : "not eligible ❌"} for HR round.`
+      );
+
+      await handleLiveVideoComplete(scoreTotal); // ← save score to backend
+
+      navigate("/hrround"); // then navigate
       return;
     }
     setQuestionIndex((prev) => prev + 1);
@@ -282,89 +409,201 @@ function LiveVideoInterviewPage() {
     setIson(true);
   };
 
-  return (
-    <div className="myapp">
-      <h1>Live Mock Interview</h1>
+};
 
-    {!ison && <> ( { show && <>({!cameraReady && permissionsGranted && (
-        <div className="camera-status">
-          <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
-            On Camera
-          </button>
+const restartCamera = async () => {
+  console.log("🔄 Restarting camera...");
+  setCameraReady(false);
+
+  // Stop existing stream
+  if (mediaStream) {
+    mediaStream.getTracks().forEach((track) => track.stop());
+  }
+
+  // Clear video element
+  if (videoRef.current) {
+    videoRef.current.srcObject = null;
+  }
+
+  // Wait a moment then restart
+  setTimeout(() => {
+    requestPermissions();
+  }, 500);
+  setIson(true);
+};
+// -----------timer logic--------
+useEffect(() => {
+  if (!interviewStarted) return;
+
+  // Only start timer for new question
+  setTimeLeft(90);
+  setTimerActive(true);
+
+  const interval = setInterval(() => {
+    if (!timerActive) return; // pause timer when feedback is shown
+
+    setTimeLeft(prev => {
+      if (prev <= 1) {
+        clearInterval(interval);
+
+        // Stop recording automatically
+        if (recording) stopRecording();
+
+        // Stop the timer since time is up
+        setTimerActive(false);
+
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [questionIndex, interviewStarted]);
+
+
+const handleLiveVideoComplete = async (finalScore) => {
+  try {
+    const maxScore = totalQuestions * 10;
+    const scorePercent = Math.round((finalScore / maxScore) * 100);
+
+    await fetch("http://localhost:7656/user/api/v1/submit-technical-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ technicalScore: scorePercent }),
+    });
+
+    alert(`✅ Live Video (Technical) score saved: ${scorePercent}%`);
+
+    // Optional: refresh dashboard rounds
+    await axios.get("http://localhost:7656/user/api/v1/interview-rounds", { withCredentials: true });
+
+  } catch (err) {
+    console.error("Failed to save technical score:", err);
+    alert("Failed to save score. Try again!");
+  }
+};
+return (
+  <div className="myapp">
+    <h1>Live Mock Interview</h1>
+
+    {!ison && <> ( {show && <>({!cameraReady && permissionsGranted && (
+      <div className="camera-status">
+        <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
+          On Camera
+        </button>
+      </div>
+    )})
+    </>} )</>}
+
+    {!ison && <> ( {show && <>({!cameraReady && permissionsGranted && (
+      <div className="camera-status">
+        <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
+          On Camera
+        </button>
+      </div>
+    )})
+    </>} )</>}
+
+    {!permissionsGranted && (
+      <div className="permission-section">
+        <h2>Camera & Microphone Access Required</h2>
+        <p>Please allow camera and microphone access to continue.</p>
+        <p>Please allow camera and microphone access to continue.</p>
+        <button onClick={requestPermissions}>Allow Access</button>
+      </div>
+    )}
+
+    {permissionsGranted && !interviewStarted && (
+      <div className="start-section">
+        <h2>Ready to Start Mock Interview?</h2>
+        <p>
+          You will be asked {totalQuestions} technical questions based on your
+          resume skills.
+          resume skills.
+        </p>
+        <button onClick={startInterview}>Start Mock Interview</button>
+      </div>
+    )}
+
+    {interviewStarted && (
+      <>
+        <div className="appvide">
+          <video
+            id="interviewVideo"
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ backgroundColor: "black" }}
+          />
         </div>
-      )})
-      </>} )</>}
 
-      {!permissionsGranted && (
-        <div className="permission-section">
-          <h2>Camera & Microphone Access Required</h2>
-          <p>Please allow camera and microphone access to continue.</p>
-          <button onClick={requestPermissions}>Allow Access</button>
-        </div>
-      )}
-
-      {permissionsGranted && !interviewStarted && (
-        <div className="start-section">
-          <h2>Ready to Start Mock Interview?</h2>
-          <p>
-            You will be asked {totalQuestions} technical questions based on your
-            resume skills.
-          </p>
-          <button onClick={startInterview}>Start Mock Interview</button>
-        </div>
-      )}
-
-      {interviewStarted && (
-        <>
-          <div className="appvide">
-            <video
-              id="interviewVideo"
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              style={{ backgroundColor: "black" }}
-            />
-          </div>
-
-          <div className="question-section">
-            {ison && (
-              <>
-                <h2>
-                  Question {questionIndex + 1} of {totalQuestions}:
-                </h2>
-                <p>{question}</p>
-              </>
-            )}
-
-            {!recording && (
-              <button onClick={startRecording}>Start Recording Answer</button>
-            )}
-            {recording && (
-              <button onClick={stopRecording}>Stop & Submit Answer</button>
-            )}
-          </div>
-
-          {feedback && (
-            <div className="feedback-section">
-              <h2>Feedback</h2>
-              <p>
-                <strong>Score:</strong> {feedback.score}/10
-              </p>
-              <p>
-                <strong>Comments:</strong> {feedback.feedback}
-              </p>
-              <button onClick={nextQuestion}>
-                {questionIndex + 1 >= totalQuestions
-                  ? "Finish Interview"
-                  : "Next Question"}
-              </button>
-            </div>
+        <div className="question-section">
+          {ison && (
+            <>
+              <h2>
+                Question {questionIndex + 1} of {totalQuestions}:
+              </h2>
+              <p>{question}</p>
+            </>
           )}
-        </>
-      )}
-    </div>
-  );
+
+          <div className="timer">
+            <strong>Time Left:</strong> {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
+          </div>
+
+          {ison && (
+            <>
+              <h2>
+                Question {questionIndex + 1} of {totalQuestions}:
+              </h2>
+              <p>{question}</p>
+            </>
+          )}
+
+          {!recording && (
+            <button onClick={startRecording}>Start Recording Answer</button>
+          )}
+          {recording && (
+            <button onClick={stopRecording}>Stop & Submit Answer</button>
+          )}
+        </div>
+
+        {feedback && (
+          <div className="feedback-section">
+            <h2>Feedback</h2>
+            <p>
+              <strong>Score:</strong> {feedback.score}/10
+            </p>
+            <p>
+              <strong>Comments:</strong> {feedback.feedback}
+            </p>
+
+            {/* Show next question button if not last */}
+            {questionIndex + 1 < totalQuestions && <button onClick={nextQuestion}>Next Question</button>}
+
+            {questionIndex + 1 >= totalQuestions && (
+              <div>
+                <h2>Technical Round Completed</h2>
+                <p>Total Score: {scoreTotal}/{totalQuestions * 10} ({Math.round((scoreTotal / (totalQuestions * 10)) * 100)}%)</p>
+                <p>Eligibility: {scoreTotal > (totalQuestions * 10) / 2 ? "Eligible ✅" : "Not Eligible ❌"}</p>
+
+                {scoreTotal > (totalQuestions * 10) / 2 ? (
+                  <button onClick={async () => { await handleLiveVideoComplete(scoreTotal); navigate("/hrround"); }}>Proceed to HR Round</button>
+                ) : (
+                  <button onClick={async () => { await handleLiveVideoComplete(scoreTotal); alert("Candidate not eligible for HR round."); }}>Finish Technical Round</button>
+                )}
+              </div>
+            )}
+
+          </div>
+        )}
+      </>
+    )}
+  </div>
+);
 }
 
 export default LiveVideoInterviewPage;

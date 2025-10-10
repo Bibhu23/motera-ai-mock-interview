@@ -81,8 +81,8 @@ function Features() {
                     <div className="row flex-nowrap justify-content-center"
                     >
                         {points.map((point, index) => (
-                            <div className="col-md-3 mb-4 text-center" key={index}
-                            >
+                            <div className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4 text-center" key={index}>
+
                                 <div className="card h-100 shadow-sm border-0 p-3"
                                     style={{ backgroundColor: "#FFF2F5" }}
 

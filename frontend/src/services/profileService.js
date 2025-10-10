@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
@@ -47,4 +48,44 @@ export async function saveProfile(profile) {
 export async function getProfile() {
     const res = await axios.get(`${API_URL}/getProfile`, { withCredentials: true });
     return res.data.profile;
+=======
+import Gpi from "../Gpi";
+
+// Fetch profile
+// profileService.js
+export async function getProfile() {
+    const res = await Gpi.get("/user/api/v1/profile", { withCredentials: true });
+    return res.data;
+}
+
+// Upload resume and get parsed data
+export async function uploadResume(file) {
+    try {
+        const formData = new FormData();
+        formData.append("resume", file);
+
+        const res = await Gpi.post("/api/upload-resume", formData, {
+            withCredentials: true,
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        return res.data.parsedData; // parsed resume returned from backend
+    } catch (err) {
+        console.error("Resume upload failed:", err);
+        throw err;
+    }
+}
+
+// Save / update profile
+export async function updateProfile(profileData) {
+    try {
+        const res = await Gpi.post("/user/api/v1/profile/update", profileData, {
+            withCredentials: true,
+        });
+        return res.data;
+    } catch (err) {
+        console.error("Failed to update profile:", err);
+        throw err;
+    }
+>>>>>>> Stashed changes
 }

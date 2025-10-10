@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     technicalScore: { type: Number, default: null },
     technicalDate: { type: Date, default: null },
     hrStatus: { type: String, default: "Pending" },
+    hrScore: { type: Number, default: null },
     hrDate: { type: Date, default: null }
 
 });

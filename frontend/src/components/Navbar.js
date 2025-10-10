@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { AppContext } from "../context/Appcontext";
+import motera_logo from "../components/motera_logo.png"
 
 function Navbar() {
   const { credit, login, logoutUser } = useContext(AppContext);
@@ -12,11 +13,20 @@ function Navbar() {
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
           <Link className="navbar-brand d-flex align-items-center" to="/">
-            <span className="fs-3 me-2 text-info">🤖</span>
-            <div>
+            <img
+              src={motera_logo}
+              alt="Motera Logo"
+              style={{
+                width: "150px",
+                height: "70px",
+                marginRight: "10px",
+                borderRadius: "8px",
+              }}
+            />
+            {/* <div>
               <div className="fw-bold fs-5">Motera</div>
               <div className="fs-6">Mock Interview Platform</div>
-            </div>
+            </div> */}
           </Link>
 
           <button
