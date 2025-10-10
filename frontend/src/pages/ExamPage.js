@@ -32,7 +32,7 @@ export default function ExamPage() {
     }, []);
 
     const { start, submitAnswer, next, prev, finish, connected } = useInterviewSocket({
-        url: process.env.REACT_APP_API_URL || "http://localhost:7656",
+        url: process.env.REACT_APP_API_URL || "https://motera-backend.onrender.com",
         onQuestion: handleQuestion,
         onAnswerResult: handleAnswerResult,
         onFinished: handleFinished,
