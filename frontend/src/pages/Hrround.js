@@ -174,7 +174,7 @@ function HrInterviewPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:7656/api/gemini/hr-base?limit=${totalQuestions}`,
+        `https://motera-backend.onrender.com/api/gemini/hr-base?limit=${totalQuestions}`,
         { credentials: "include" }
       );
       const data = await res.json();
