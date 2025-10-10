@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Hrround.css";
-import * as faceapi from "face-api.js/dist/face-api.min.js";
+import * as faceapi from "face-api.js";
 import { FaSadCry } from "react-icons/fa";
 
 function HrInterviewPage() {
