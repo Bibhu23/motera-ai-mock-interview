@@ -6,11 +6,15 @@ import { AppContext } from "../context/Appcontext";
 import { uploadResume, saveProfile, getProfile } from "../services/profileService";
 import "./ProfilePage.css";
 import { FaPlus, FaMinus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 
 const ProfilePage = () => {
+ 
     const { login } = useContext(AppContext);
+    const navigate=useNavigate();
+  //also upload resume here
 
-    const [file, setFile] = useState(null);
     const [profile, setProfile] = useState({
         fullName: "",
         email: "",
@@ -24,19 +28,23 @@ const ProfilePage = () => {
         hobbies: "",
         workHistory: [],
         education: [],
+        resume:null,
         certifications: [],
+       
     });
 
     const [completion, setCompletion] = useState(0);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
-    // Calculate profile completion
+    // Calculate profile completion 
     useEffect(() => {
         const fields = Object.values(profile);
         const filled = fields.filter(v => {
-            if (Array.isArray(v)) return v.length > 0;
-            return v && v.trim() !== "";
+            if (Array.isArray(v)) return v.length > 0;   // arrays
+            //trim only the String
+            if (typeof v === "string") return v.trim() !== ""; // strings
+            return v != null; // other values (like numbers)
         });
         setCompletion(Math.round((filled.length / fields.length) * 100));
     }, [profile]);
@@ -44,8 +52,39 @@ const ProfilePage = () => {
     // Fetch profile on mount
     useEffect(() => {
         async function fetchData() {
-            const data = await getProfile();
-            if (data) setProfile(data);
+            try {
+                const data = await getProfile();
+            if (data){ 
+                console.log(data);
+                
+                setProfile(data);
+            }
+            } catch (err) {
+                //for the first time it will execute
+                if (err.response && err.response.status === 404) {
+                    // First-time user, show empty form
+                    setProfile({
+                      fullName: "",
+                      email: "",
+                      phone: "",
+                      title: "",
+                      city: "",
+                      country: "",
+                      experience: "",
+                      summary: "",
+                      skills: "",
+                      hobbies: "",
+                      workHistory: [],
+                      education: [],
+                      resume: null,
+                      certifications: [],
+                    });
+                  }else{
+                    console.log(err);
+                    
+                  }
+            }
+            
         }
         fetchData();
     }, []);
@@ -54,8 +93,8 @@ const ProfilePage = () => {
     const handleFileUpload = async (e) => {
         const uploadedFile = e.target.files[0];
         if (!uploadedFile) return;
-        setFile(uploadedFile);
-        setLoading(true);
+        
+        /*setLoading(true);
         setMessage("Analyzing your resume...");
         try {
             const data = await uploadResume(uploadedFile);
@@ -65,8 +104,13 @@ const ProfilePage = () => {
             setMessage("Failed to analyze resume. Try again.");
         } finally {
             setLoading(false);
-        }
+        }*/
+       setProfile({...profile,resume: e.target.files[0]})
     };
+     //handle certification upload
+    const handleCertificationUpload=(e)=>{
+        setProfile({...profile,certifications: e.target.files[0]})
+    }
 
     // Handle input change
     const handleChange = (e) => {
@@ -102,6 +146,7 @@ const ProfilePage = () => {
             setLoading(true);
             await saveProfile(profile);
             setMessage("Profile saved successfully!");
+           navigate("/profile/view")
         } catch (err) {
             setMessage("Failed to save profile.");
         } finally {

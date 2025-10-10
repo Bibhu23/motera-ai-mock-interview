@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const AnswerSchema = new mongoose.Schema({
+/*const AnswerSchema = new mongoose.Schema({
     qIndex: Number,
     answer: String,
     evaluation: mongoose.Schema.Types.Mixed,
@@ -13,7 +13,7 @@ const QuestionSchema = new mongoose.Schema({
     text: String,
     type: String,
     options: [String],
-});
+});*/
 
 const InterviewSchema = new mongoose.Schema({
     userId: String,

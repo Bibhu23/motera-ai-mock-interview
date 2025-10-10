@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
     creditBalance: { type: Number, default: 5 },
-
+    experienceYears: { type: Number, required: true },
+    skills: { type: [String], default: [] },
     // Interview tracking fields
     resumeScore: { type: Number, default: null },
     resumeDate: { type: Date, default: null },

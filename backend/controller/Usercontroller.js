@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, experienceYears, skills, phone, linkedInUrl } = req.body;
+    const { name, email, password,  experienceYears} = req.body;
     console.log("Uploaded file:", req.file);
 
     const user = await User.findOne({ email });
@@ -13,17 +13,14 @@ const registerUser = async (req, res) => {
 
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const resumePath = req.file ? req.file.path : null;
+ 
     const newUser = new User({
       name: name,
       email: email,
       password: passwordHash,
-      role: role,
+    
       experienceYears: experienceYears,
-      skills: skills,
-      phone: phone,
-      linkedInUrl: linkedInUrl,
-      resumeUrl: resumePath
+     
     })
     await newUser.save();
 
@@ -57,7 +54,7 @@ const loginUser = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 1000,
     });
     res.status(200).json({

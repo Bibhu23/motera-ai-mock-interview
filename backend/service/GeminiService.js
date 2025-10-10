@@ -17,25 +17,14 @@ async function callGemini(prompt) {
             },
             timeout: 40000,
         });
-<<<<<<< Updated upstream
         const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     return text?.trim();
-=======
-
-        // ✅ Access response safely inside the try block
-        const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        return text?.trim();
-
->>>>>>> Stashed changes
     } catch (error) {
         console.error("Gemini API error:", error.response?.data || error.message);
         throw new Error("Gemini API error: " + (error.response?.data || error.message));
     }
-<<<<<<< Updated upstream
 
     
-=======
->>>>>>> Stashed changes
 }
 
 

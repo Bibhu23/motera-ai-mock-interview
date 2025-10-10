@@ -37,7 +37,7 @@ app.use("/api", liveInterviewRouter);
 app.use("/user/api/v1", userRoundsRouter);
 app.use("/user/api/v1/profile", profileRoutes);
 
-
+//http://localhost:7656/user/api/v1/profile
 const startServer = async () => {
     try {
         await connectDB(); // your existing DB connect

@@ -17,6 +17,7 @@ import TermsConditions from './pages/TermsConditions';
 import ExamPage from './pages/ExamPage';
 import ProfilePage from './pages/ProfilePage'
 import HrInterviewPage from './pages/Hrround';
+import ProfileViewPage from './pages/Profileviewpage';
 function App() {
   return (
     <div className="App">
@@ -37,6 +38,7 @@ function App() {
           <Route path='/terms' element={<TermsConditions />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/hrround" element={<HrInterviewPage />} />
+          <Route path='/profile/view' element={<ProfileViewPage/>}/>
         </Routes>
         <Footer />
       </div>
