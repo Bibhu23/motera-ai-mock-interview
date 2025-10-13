@@ -5,8 +5,10 @@ import "./Login.css"; // Import the CSS file
 import bgImg from "../assets/moterabac.jfif";
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
+import axios from "axios";
 
 export default function Login() {
+    const { backend } = React.useContext(AppContext)
     const { setUser, setLogin } = useContext(AppContext);
     const navigate = useNavigate();
     const [loginForm, setLoginForm] = useState({
@@ -21,7 +23,7 @@ export default function Login() {
             return;
         }
         try {
-            const res = await Gpi.post("/user/api/v1/login", loginForm, {
+            const res = await axios.post(`${backend}/user/api/v1/login`, loginForm, {
                 withCredentials: true,
             });
 
@@ -42,7 +44,7 @@ export default function Login() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = "https://motera-backend.onrender.com";
+        window.location.href = `${backend}`;
     };
 
     return (

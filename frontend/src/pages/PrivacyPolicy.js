@@ -92,10 +92,11 @@ export default function PrivacyPolicy() {
 
             <h3>Contact Us</h3>
             <p className="support">
-                <strong> Email:</strong>support@moterai.com<br />
-                <strong> Website: </strong>https://motera.app<br />
-                <strong>Response Time:</strong>We aim to respond to all privacy-related inquiries within 48 hours
+                <div><strong>Email:</strong> support@moterai.com</div>
+                <div><strong>Website:</strong> https://motera.app</div>
+                <div><strong>Response Time:</strong> We aim to respond to all privacy-related inquiries within 48 hours</div>
             </p>
+
         </div>
     );
 }

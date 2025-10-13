@@ -8,7 +8,7 @@ const AppContextProvider = (props) => {
   const [user, setUser] = useState(null);
   const [credit, setCredit] = useState(0);
   const [login, setLogin] = useState(() => localStorage.getItem("login") === "true");
-
+  const backend = "http://localhost:7656"
   useEffect(() => {
     localStorage.setItem("login", login ? "true" : "false");
   }, [login]);
@@ -72,7 +72,9 @@ const AppContextProvider = (props) => {
     login,
     setLogin,
     logoutUser,
-    consumeCredit, // ✅ exposed correctly
+    consumeCredit,
+    backend
+    // ✅ exposed correctly
   };
 
   return <AppContext.Provider value={value}>{props.children}</AppContext.Provider>;

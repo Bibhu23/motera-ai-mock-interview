@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Round1 = () => {
+  const { backend } = React.useContext(AppContext)
   const [resume, setResume] = useState(null);
   const [score, setScore] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -21,7 +22,7 @@ const Round1 = () => {
       if (login) {
         try {
           const response = await axios.get(
-            "https://motera-backend.onrender.com/user/api/v1/credit",
+            `${backend}/user/api/v1/credit`,
             { withCredentials: true }
           );
 
@@ -77,7 +78,7 @@ const Round1 = () => {
 
       // Upload resume and get score from analysis API
       const response = await axios.post(
-        "https://motera-backend.onrender.com/api/upload-resume",
+        `${backend}/api/upload-resume`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -97,7 +98,7 @@ const Round1 = () => {
       // Update backend resumeScore so dashboard reflects it
       try {
         await axios.post(
-          "https://motera-backend.onrender.com/user/api/v1/update-round",
+          `${backend}/user/api/v1/update-round`,
           { round: "Resume Shortlist", score },
           { withCredentials: true }
         );

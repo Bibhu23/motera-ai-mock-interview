@@ -91,3 +91,27 @@
 .camera-status button:hover {
     background: #e0a800;
 }
+
+@keyframes pulse {
+    0% {
+        color: red;
+        opacity: 1;
+    }
+
+    50% {
+        color: #ff6666;
+        /* slightly dimmer red */
+        opacity: 0.6;
+    }
+
+    100% {
+        color: red;
+        opacity: 1;
+    }
+}
+
+.pulse-red {
+    animation: pulse 1s infinite;
+    /* adjust duration for slower/faster pulse */
+    font-weight: bold;
+}

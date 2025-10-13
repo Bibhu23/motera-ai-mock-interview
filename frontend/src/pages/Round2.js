@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Round2 = () => {
+    const { backend } = useContext(AppContext)
     const { login } = useContext(AppContext);
     const [score, setScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(10 * 60); // 10 minutes
@@ -30,7 +31,7 @@ const Round2 = () => {
                         : "/api/gemini/technical-based-on-resume";
 
                 const response = await axios.get(
-                    `https://motera-backend.onrender.com${endpoint}?limit=${questionCount}`,
+                    `${backend}${endpoint}?limit=${questionCount}`,
                     { withCredentials: true }
                 );
 
@@ -88,7 +89,7 @@ const Round2 = () => {
 
             // 1️⃣ Send percentage score to backend
             await axios.post(
-                "https://motera-backend.onrender.com/user/api/v1/update-round",
+                `${backend}/user/api/v1/update-round`,
                 { round: "Written Test", score: scorePercent },
                 { withCredentials: true }
             );

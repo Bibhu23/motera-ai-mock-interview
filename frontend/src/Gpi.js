@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const Gpi = axios.create({
-    baseURL: "https://motera-backend.onrender.com",
+    baseURL: "http://localhost:7656",
     withCredentials: true,
 });
 

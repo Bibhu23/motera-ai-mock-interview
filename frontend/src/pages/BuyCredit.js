@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 import Gpi from "../Gpi";
 import "./BuyCredit.css"; // Import the CSS
 import { Navigate } from "react-router-dom";
+import axios from "axios";
 
 export default function BuyCredit() {
-    const { user, getLocalcredits,login } = useContext(AppContext);
+    const { backend } = React.useContext(AppContext)
+    const { user, getLocalcredits, login } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
-    
+
     const planToProductId = (planName) => {
         if (planName === "Basic") return "basic";
         if (planName === "Premium") return "premium";
@@ -23,8 +25,8 @@ export default function BuyCredit() {
             const productId = planToProductId(planName);
             if (!productId) return toast.error("Invalid plan");
 
-            const { data } = await Gpi.post(
-                "/api/payment/create-order",
+            const { data } = await axios.post(
+                `${backend}/api/payment/create-order`,
                 { productId },
                 { withCredentials: true }
             );
@@ -43,8 +45,8 @@ export default function BuyCredit() {
                 order_id: order.id,
                 handler: async function (response) {
                     try {
-                        const verifyRes = await Gpi.post(
-                            "/api/payment/verify",
+                        const verifyRes = await axios.post(
+                            `${backend}/api/payment/verify`,
                             {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
@@ -84,7 +86,7 @@ export default function BuyCredit() {
     };
 
     return (
-        login? (<div className="buycredit-container">
+        login ? (<div className="buycredit-container">
             <button className="plans-btn">Plans</button>
 
             <h1 className="buycredit-title">Choose the Plan</h1>
@@ -106,6 +108,6 @@ export default function BuyCredit() {
                     </div>
                 ))}
             </div>
-        </div>):(<Navigate to="/login" />)
+        </div>) : (<Navigate to="/login" />)
     );
 }

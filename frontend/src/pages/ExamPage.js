@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { React, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useInterviewSocket from "../hook/useSockethook";
+import { AppContext } from "../context/Appcontext";
 import "./ExamPage.css";
 
 export default function ExamPage() {
+    const { backend } = React.useContext(AppContext)
     const [question, setQuestion] = useState(null);
     const [qIndex, setQIndex] = useState(0);
     const [total, setTotal] = useState(0);
@@ -32,7 +34,7 @@ export default function ExamPage() {
     }, []);
 
     const { start, submitAnswer, next, prev, finish, connected } = useInterviewSocket({
-        url: process.env.REACT_APP_API_URL || "https://motera-backend.onrender.com",
+        url: process.env.REACT_APP_API_URL || `${backend}`,
         onQuestion: handleQuestion,
         onAnswerResult: handleAnswerResult,
         onFinished: handleFinished,

@@ -1,11 +1,14 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Hrround.css";
 import * as faceapi from "face-api.js";
 import { FaSadCry } from "react-icons/fa";
+import { AppContext } from "../context/Appcontext";
+
 
 function HrInterviewPage() {
+  const { backend } = React.useContext(AppContext)
   const videoRef = useRef();
   const [question, setQuestion] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -23,6 +26,14 @@ function HrInterviewPage() {
   const [show, setShow] = useState(false);
   const [ison, setIson] = useState(false);
   const [faceMissingCount, setFaceMissingCount] = useState(0);
+  const [readingTimeLeft, setReadingTimeLeft] = useState(15); // 15 sec reading
+  const [readingTimeOver, setReadingTimeOver] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(90); // 90 sec recording
+  const [forceRecord, setForceRecord] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const timerRef = useRef(null); // To store interval ID
+  const [showResultButton, setShowResultButton] = useState(false);
+
 
   const navigate = useNavigate();
 
@@ -171,10 +182,9 @@ function HrInterviewPage() {
       alert("Please allow camera and microphone access first.");
       return;
     }
-
     try {
       const res = await fetch(
-        `https://motera-backend.onrender.com/api/gemini/hr-base?limit=${totalQuestions}`,
+        `${backend}/api/gemini/hr-base?limit=${totalQuestions}`,
         { credentials: "include" }
       );
       const data = await res.json();
@@ -263,7 +273,7 @@ function HrInterviewPage() {
     formData.append("question", question || "No question provided");
 
     try {
-      const res = await fetch("http://localhost:7656/api/transcribe", {
+      const res = await fetch(`${backend}/api/transcribe`, {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -288,7 +298,7 @@ function HrInterviewPage() {
         return;
       }
 
-      const feedbackRes = await fetch("http://localhost:7656/api/feedback", {
+      const feedbackRes = await fetch(`${backend}/api/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -322,16 +332,13 @@ function HrInterviewPage() {
 
   const nextQuestion = async () => {
     setFeedback(null);
-    if (questionIndex + 1 >= totalQuestions) {
-      const maxScore = totalQuestions * 10;
-      const pct = Math.round((scoreTotal / maxScore) * 100);
-      const status = pct >= 50 ? "Pass" : "Fail";
 
-      await handleHRComplete(status, scoreTotal);
-      alert(`HR Round Finished! Score: ${pct}% | Status: ${status}`);
-      navigate("/dashboard");
+    if (questionIndex + 1 >= totalQuestions) {
+      // Instead of showing HR round immediately, show the result button
+      setShowResultButton(true);
       return;
     }
+
     setQuestionIndex((prev) => prev + 1);
   };
 
@@ -353,13 +360,57 @@ function HrInterviewPage() {
 
     setIson(true);
   };
+  // ----------- TIMER LOGIC -----------
+  useEffect(() => {
+    if (interviewStarted && questions.length > 0) {
+      setReadingTimeLeft(15);
+      setReadingTimeOver(false);
+      setForceRecord(false);
+
+      const timer = setInterval(() => {
+        setReadingTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setReadingTimeOver(true);
+            setForceRecord(true); // force user to click Start Recording
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [questionIndex, interviewStarted, questions]);
+
+  useEffect(() => {
+    if (recording) {
+      setRecordingTime(90); // reset recording timer
+
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            stopRecording(); // auto stop
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+
+    return () => clearInterval(timerRef.current);
+  }, [recording]);
+
 
   const handleHRComplete = async (status, score) => {
     try {
       const maxScore = totalQuestions * 10;
       const scorePercent = Math.round((score / maxScore) * 100);
 
-      await fetch("http://localhost:7656/user/api/v1/submit-hr-score", {
+      await fetch(`${backend}/user/api/v1/submit-hr-score`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -371,7 +422,7 @@ function HrInterviewPage() {
 
       alert(`✅ HR Round saved successfully (${status})`);
 
-      await axios.get("http://localhost:7656/user/api/v1/interview-rounds", {
+      await axios.get(`${backend}/user/api/v1/interview-rounds`, {
         withCredentials: true,
       });
     } catch (err) {
@@ -430,6 +481,21 @@ function HrInterviewPage() {
           </div>
 
           <div className="question-section">
+            <div className="timer">
+              {!readingTimeOver ? (
+                <span className={readingTimeLeft <= 5 ? "pulse-red" : ""}>
+                  Reading Time Left: {readingTimeLeft}s
+                </span>
+              ) : recording ? (
+                <span className={recordingTime <= 5 ? "pulse-red" : ""}>
+                  Recording Time Left: {Math.floor(recordingTime / 60)}:
+                  {String(recordingTime % 60).padStart(2, "0")}
+                </span>
+              ) : (
+                <span>{forceRecord ? "Time's up!" : ""}</span>
+              )}
+            </div>
+
             {ison && (
               <>
                 <h2>
@@ -438,6 +504,7 @@ function HrInterviewPage() {
                 <p>{question}</p>
               </>
             )}
+
             {!recording && (
               <button onClick={startRecording}>Start Recording Answer</button>
             )}
@@ -449,54 +516,21 @@ function HrInterviewPage() {
           {feedback && (
             <div className="feedback-section">
               <h2>Feedback</h2>
-              <p>
-                <strong>Score:</strong> {feedback.score}/10
-              </p>
-              <p>
-                <strong>Comments:</strong> {feedback.feedback}
-              </p>
+              <p><strong>Score:</strong> {feedback.score}/10</p>
+              <p><strong>Comments:</strong> {feedback.feedback}</p>
 
               {questionIndex + 1 < totalQuestions && (
                 <button onClick={nextQuestion}>Next Question</button>
               )}
 
-              {questionIndex + 1 >= totalQuestions && (
-                <div>
-                  <h2>HR Round Completed 🎯</h2>
-                  <p>
-                    Total Score: {scoreTotal}/{totalQuestions * 10} (
-                    {Math.round((scoreTotal / (totalQuestions * 10)) * 100)}%)
-                  </p>
-                  <p>
-                    Eligibility:{" "}
-                    {scoreTotal > (totalQuestions * 10) / 2
-                      ? "Eligible ✅"
-                      : "Not Eligible ❌"}
-                  </p>
-                  {scoreTotal > (totalQuestions * 10) / 2 ? (
-                    <button
-                      onClick={async () => {
-                        await handleHRComplete("Pass", scoreTotal);
-                        navigate("/dashboard");
-                      }}
-                    >
-                      Finish HR Round
-                    </button>
-                  ) : (
-                    <button
-                      onClick={async () => {
-                        await handleHRComplete("Fail", scoreTotal);
-                        alert("Candidate not eligible for further rounds.");
-                        navigate("/dashboard");
-                      }}
-                    >
-                      Finish HR Round
-                    </button>
-                  )}
-                </div>
+              {questionIndex + 1 === totalQuestions && (
+                <button onClick={() => navigate("/hr-result", { state: { totalScore: scoreTotal, totalQuestions } })}>
+                  Show Result
+                </button>
               )}
             </div>
           )}
+
         </>
       )}
     </div>

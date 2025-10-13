@@ -4,8 +4,11 @@ import Gpi from "../Gpi";
 import "./Login.css";
 import bgImg from "../assets/moterabac.jfif";
 import { FcGoogle } from "react-icons/fc";
+import { AppContext } from "../context/Appcontext";
+import axios from "axios";
 
 export default function Signup() {
+    const { backend } = React.useContext(AppContext)
     const [form, setForm] = useState({
         name: "",
         email: "",
@@ -20,17 +23,15 @@ export default function Signup() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
-            const formData = new FormData();
-            Object.keys(form).forEach((key) => {
-                if (form[key]) formData.append(key, form[key]);
+            await axios.post(`${backend}/user/api/v1/register`, {
+                name: form.name,
+                email: form.email,
+                password: form.password,
+                experienceYears: 0   // default value
+            }, {
+                headers: { "Content-Type": "application/json" }
             });
-
-            await Gpi.post("/user/api/v1/register", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-
             navigate("/login");
         } catch (err) {
             setError(err.response?.data?.message || "Signup failed");
@@ -38,7 +39,7 @@ export default function Signup() {
     };
 
     const handleGoogleSignup = () => {
-        window.location.href = "https://motera-backend.onrender.com";
+        window.location.href = `${backend}`;
     };
 
     return (

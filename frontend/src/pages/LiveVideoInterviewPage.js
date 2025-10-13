@@ -1,10 +1,13 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./LiveVideoInterviewPage.css";
 import * as faceapi from "face-api.js";
+import { AppContext } from "../context/Appcontext";
+
 
 function LiveVideoInterviewPage() {
+  const { backend } = React.useContext(AppContext)
   const videoRef = useRef(null);
   const [question, setQuestion] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -21,6 +24,13 @@ function LiveVideoInterviewPage() {
   const [cameraReady, setCameraReady] = useState(false);
   const [show, setShow] = useState(false);
   const [ison, setIson] = useState(false);
+  const [readingTimeLeft, setReadingTimeLeft] = useState(15); // 15 sec reading
+  const [readingTimeOver, setReadingTimeOver] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(90); // 90 sec recording
+  const [forceRecord, setForceRecord] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const timerRef = useRef(null); // To store interval ID
+
 
   const navigate = useNavigate();
 
@@ -41,7 +51,6 @@ function LiveVideoInterviewPage() {
 
   // ---------------- REQUEST PERMISSIONS ----------------
   const [faceMissingCount, setFaceMissingCount] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
   const [timerActive, setTimerActive] = useState(false);
 
   // ---------------- REQUEST CAMERA & MICROPHONE ----------------
@@ -178,7 +187,7 @@ function LiveVideoInterviewPage() {
 
     try {
       const res = await fetch(
-        `https://motera-backend.onrender.com/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
+        `${backend}/api/gemini/technical-based-on-resume?limit=${totalQuestions}`,
         { credentials: "include" }
       );
       const data = await res.json();
@@ -228,6 +237,9 @@ function LiveVideoInterviewPage() {
     };
 
     recorder.onstop = async () => {
+      clearInterval(timerRef.current); // stop timer
+      setRecording(false);
+      setTimeLeft(90); // reset timer for next question
       if (!localChunks || localChunks.length === 0) {
         setFeedback({ score: 0, feedback: "No valid audio recorded." });
         return;
@@ -239,13 +251,12 @@ function LiveVideoInterviewPage() {
     recorder.start();
     setMediaRecorder(recorder);
     setRecording(true);
+
   };
 
   const stopRecording = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-      setRecording(false);
-    }
+    if (mediaRecorder) mediaRecorder.stop();
+    setRecording(false); // stops timer
   };
 
   // ---------------- UPLOAD & TRANSCRIBE ----------------
@@ -258,7 +269,7 @@ function LiveVideoInterviewPage() {
     formData.append("question", question);
 
     try {
-      const res = await fetch("https://motera-backend.onrender.com/api/transcribe", {
+      const res = await fetch(`${backend}/api/transcribe`, {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -273,7 +284,7 @@ function LiveVideoInterviewPage() {
         return;
       }
 
-      const feedbackRes = await fetch("https://motera-backend.onrender.com/api/feedback", {
+      const feedbackRes = await fetch(`${backend}/api/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, transcript: data.transcript }),
@@ -304,9 +315,10 @@ function LiveVideoInterviewPage() {
   };
 
   const nextQuestion = async () => {
-    setFeedback(null);
+    setFeedback(null); // hide old feedback
     setQuestionIndex((prev) => prev + 1);
-    setTimerActive(true);
+    setTimeLeft(90); // reset timer for next question
+    setRecording(false);
 
     if (questionIndex + 1 >= totalQuestions) {
       const maxScore = totalQuestions * 10;
@@ -345,27 +357,48 @@ function LiveVideoInterviewPage() {
 
   // ----------- TIMER LOGIC -----------
   useEffect(() => {
-    if (!interviewStarted) return;
+    if (interviewStarted && questions.length > 0) {
+      setReadingTimeLeft(15);
+      setReadingTimeOver(false);
+      setForceRecord(false);
 
-    setTimeLeft(90);
-    setTimerActive(true);
+      const timer = setInterval(() => {
+        setReadingTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setReadingTimeOver(true);
+            setForceRecord(true); // force user to click Start Recording
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    const interval = setInterval(() => {
-      if (!timerActive) return;
+      return () => clearInterval(timer);
+    }
+  }, [questionIndex, interviewStarted, questions]);
 
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          if (recording) stopRecording();
-          setTimerActive(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  useEffect(() => {
+    if (recording) {
+      setRecordingTime(90); // reset recording timer
 
-    return () => clearInterval(interval);
-  }, [questionIndex, interviewStarted]);
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            stopRecording(); // auto stop
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+
+    return () => clearInterval(timerRef.current);
+  }, [recording]);
+
 
   const handleLiveVideoComplete = async (finalScore) => {
     try {
@@ -373,7 +406,7 @@ function LiveVideoInterviewPage() {
       const scorePercent = Math.round((finalScore / maxScore) * 100);
 
       await fetch(
-        "https://motera-backend.onrender.com/user/api/v1/submit-technical-score",
+        `${backend}/user/api/v1/submit-technical-score`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -384,7 +417,7 @@ function LiveVideoInterviewPage() {
 
       alert(`✅ Live Video (Technical) score saved: ${scorePercent}%`);
 
-      await axios.get("https://motera-backend.onrender.com/user/api/v1/interview-rounds", {
+      await axios.get(`${backend}/user/api/v1/interview-rounds`, {
         withCredentials: true,
       });
     } catch (err) {
@@ -447,9 +480,18 @@ function LiveVideoInterviewPage() {
 
           <div className="question-section">
             <div className="timer">
-              <strong>Time Left:</strong>{" "}
-              {Math.floor(timeLeft / 60)}:
-              {String(timeLeft % 60).padStart(2, "0")}
+              {!readingTimeOver ? (
+                <span className={readingTimeLeft <= 5 ? "pulse-red" : ""}>
+                  Reading Time Left: {readingTimeLeft}s
+                </span>
+              ) : recording ? (
+                <span className={recordingTime <= 5 ? "pulse-red" : ""}>
+                  Recording Time Left: {Math.floor(recordingTime / 60)}:
+                  {String(recordingTime % 60).padStart(2, "0")}
+                </span>
+              ) : (
+                <span>{forceRecord ? "Time's up!" : ""}</span>
+              )}
             </div>
 
             {ison && (

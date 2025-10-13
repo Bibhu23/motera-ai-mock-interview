@@ -8,8 +8,9 @@ import { Navigate } from "react-router-dom";
 import "./Dashboard.css";
 
 export default function Dashboard() {
+    const { backend } = React.useContext(AppContext)
     const { login } = useContext(AppContext);
-    const barChartRef = useRef(null);
+    const barChartRef = useRef(null)
     const pieChartRef = useRef(null);
     const [interviewRounds, setInterviewRounds] = useState([]);
 
@@ -17,7 +18,7 @@ export default function Dashboard() {
     async function fetchRounds() {
         try {
             const res = await axios.get(
-                "https://motera-backend.onrender.com/user/api/v1/interview-rounds",
+                `${backend}/user/api/v1/interview-rounds`,
                 { withCredentials: true }
             );
             setInterviewRounds(res.data.rounds || []);

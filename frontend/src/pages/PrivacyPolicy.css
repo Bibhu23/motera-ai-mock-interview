@@ -15,15 +15,17 @@
 }
 
 .privacy-container h2,
-.privacy-container h3,
 .privacy-container p,
 .privacy-container ul {
     margin: 10px 0;
-    /* Uniform top and bottom margin */
     padding-left: 0;
-    /* Remove indentation */
     text-indent: 0;
-    /* No first-line indentation */
+}
+
+.privacy-container h3 {
+    font-weight: 700;
+    font-size: larger;
+
 }
 
 .privacy-container ul {
@@ -41,8 +43,15 @@
     margin: 5px 0;
 }
 
-.support {
-    border: 1px solid black;
-    padding-left: 5px;
-    border-radius: 5px;
+.privacy-container .support {
+    border: 2px solid #000;
+    padding: 15px 20px;
+    border-radius: 8px;
+    background-color: #f9f9f983;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.privacy-container .support strong {
+    width: 100px;
 }
