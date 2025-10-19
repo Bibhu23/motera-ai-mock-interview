@@ -157,7 +157,7 @@ const ProfilePage = () => {
     return (
         <div className="profile-page">
 
-            <Sidebar />
+       
 
             <div className="main">
 

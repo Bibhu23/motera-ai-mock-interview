@@ -37,7 +37,7 @@ export async function saveProfile(profile) {
         formData.append("resume", profile.resume);
     }
 
-    const res = await axios.post(`${API_URL}/update`, formData, {
+    const res = await axios.post(`${API_URL}/user/v1/profile/update`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
     });
@@ -45,6 +45,6 @@ export async function saveProfile(profile) {
 }
 
 export async function getProfile() {
-    const res = await axios.get(`${API_URL}/getProfile`, { withCredentials: true });
+    const res = await axios.get(`${API_URL}/user/v1/profile/getProfile`, { withCredentials: true });
     return res.data.profile;
 }

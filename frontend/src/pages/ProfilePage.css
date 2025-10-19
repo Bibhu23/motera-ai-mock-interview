@@ -11,6 +11,12 @@
     flex-direction: column;
     flex: 1;
     padding: 20px 40px;
+    
+}
+.main {
+    background: linear-gradient(135deg, #c1b6ff, #a0e7e5);
+    border-radius: 12px;
+    padding: 20px 40px;
 }
 
 /* Header */

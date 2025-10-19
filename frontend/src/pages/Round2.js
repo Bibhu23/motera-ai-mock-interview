@@ -13,7 +13,7 @@ const Round2 = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState({});
     const [questions, setQuestions] = useState([]);
-    const [questionCount, setQuestionCount] = useState(5);
+    const [questionCount, setQuestionCount] = useState(15);
     const [loading, setLoading] = useState(true);
     const [questionType, setQuestionType] = useState("mcq"); // mcq or technical
     const navigate = useNavigate();
@@ -160,8 +160,7 @@ const Round2 = () => {
                                     value={questionCount}
                                     onChange={(e) => setQuestionCount(parseInt(e.target.value))}
                                 >
-                                    <option value={5}>5 Questions</option>
-                                    <option value={10}>10 Questions</option>
+                                   
                                     <option value={15}>15 Questions</option>
                                 </select>
                             </div>

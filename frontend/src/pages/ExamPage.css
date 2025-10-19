@@ -1,176 +1,266 @@
+/* 🌟 Exam Container */
 .exam-container {
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 25px;
+    max-width: 700px;
+    margin: 60px auto;
+    padding: 30px;
     background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.exam-container h2 {
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+    font-family: "Poppins", "Segoe UI", Tahoma, sans-serif;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .exam-container h2 {
     font-size: 1.8rem;
     font-weight: 600;
-    margin-bottom: 15px;
-    color: #333;
+    margin-bottom: 18px;
+    color: #1a1a1a;
     text-align: center;
-}
-
-.exam-container p {
+    letter-spacing: 0.5px;
+  }
+  
+  /* Live Score */
+  .score-live {
     font-size: 1rem;
-    margin-bottom: 12px;
-    color: #444;
-}
-
-.question-box {
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  /* 🌟 Question Section */
+  .question-box {
     margin-bottom: 20px;
-}
-
-.options {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .question-box p {
+    font-size: 1.1rem;
+    color: #222;
+    margin-bottom: 15px;
+    line-height: 1.5;
+  }
+  
+  /* 🌟 Option Buttons */
+  .options {
     display: flex;
     flex-direction: column;
-    /* keep vertical stack */
     gap: 12px;
-    align-items: flex-start;
-    /* align all options to the left */
-}
-
-.option-card {
+  }
+  
+  .option-card {
     display: flex;
-    /* make text and circle in a row */
     align-items: center;
-    /* vertically center circle with text */
     gap: 10px;
-    /* space between circle and text */
-    padding: 10px 0;
-    background: transparent;
-    border: none;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
     cursor: pointer;
     font-size: 1rem;
-    color: #000;
-}
-
-
-.option-card:hover {
-    background: transparent;
-    /* no hover effect */
-    border-color: none;
-    color: #000;
-}
-
-.circle {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #000;
+    color: #111827;
+    font-weight: 500;
+    transition: all 0.25s ease-in-out;
+    position: relative;
+  }
+  
+  .option-card:hover {
+    border-color: #3b82f6;
+    background: #f0f7ff;
+    transform: translateY(-1px);
+  }
+  
+  .option-card.selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+  
+  /* Radio-like Circle */
+  .circle {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #2563eb;
     border-radius: 50%;
     flex-shrink: 0;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-
-.option-card.selected {
-    background: transparent;
-    /* no background on selected */
-    color: #000;
-    /* keep text black */
-    font-weight: normal;
-    /* optional: remove bold */
-    border: none;
-}
-
-
-.result-box {
+    transition: background 0.25s;
+  }
+  
+  .option-card.selected .circle {
+    background: #2563eb;
+  }
+  
+  /* 🌟 Result Section */
+  .result-box {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 14px;
+    background: #f3f4f6;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+    text-align: center;
+  }
+  
+  .result-box p {
+    margin: 10px 0;
+    font-size: 1rem;
+  }
+  
+  .result-box .correct {
+    color: #22c55e;
+    font-weight: 600;
+  }
+  
+  .result-box .wrong {
+    color: #ef4444;
+    font-weight: 600;
+  }
+  
+  /* 🌟 Navigation Buttons */
+  .nav-buttons {
     margin-top: 20px;
-    padding: 15px;
-    border-radius: 12px;
-    background: #f5f5f5;
-    font-size: 0.95rem;
-}
-
-.result-box p {
-    margin: 8px 0;
-}
-
-.result-box .correct {
-    color: #2ecc71;
-    font-weight: 600;
-}
-
-.result-box .wrong {
-    color: #e74c3c;
-    font-weight: 600;
-}
-
-.nav-buttons {
-    margin-top: 15px;
     display: flex;
     justify-content: space-between;
     gap: 10px;
-}
-
-.nav-buttons button {
+  }
+  
+  .nav-buttons button {
     flex: 1;
-    padding: 10px 16px;
+    padding: 12px 16px;
     border: none;
-    border-radius: 8px;
-    background: #4a90e2;
-    color: white;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #fff;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.25s ease-in-out;
-}
-
-.nav-buttons button:hover:not(:disabled) {
-    background: #357abd;
-}
-
-.nav-buttons button:disabled {
-    background: #ccc;
+    transition: all 0.25s ease-in-out;
+  }
+  
+  .nav-buttons button:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+  }
+  
+  .nav-buttons button:disabled {
+    background: #d1d5db;
     cursor: not-allowed;
-}
-
-.summary-box {
+  }
+  
+  /* 🌟 Summary */
+  .summary-box {
     text-align: center;
-    padding: 20px;
-    border-radius: 14px;
-    background: #f9fafb;
-}
-
-.summary-box h2 {
-    color: #2ecc71;
-    margin-bottom: 12px;
-}
-
-.summary-box p {
+    padding: 30px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #ffffff, #f3f4f6);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.4s ease;
+  }
+  
+  .summary-box h2 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: #10b981;
+  }
+  
+  .summary-box p {
     font-size: 1rem;
     margin: 6px 0;
-}
-
-/* Add at the end of ExamPage.css */
-.btn-success {
-    background: #27ae60;
-    color: #fff;
+    color: #374151;
+  }
+  
+  /* Buttons in Summary */
+  .btn-success,
+  .btn-danger {
+    padding: 12px 26px;
+    font-size: 1rem;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    margin-top: 18px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-success:hover {
-    background: #219150;
-}
-
-/* Add to ExamPage.css */
-.score-live {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #27ae60;
-    margin-bottom: 10px;
-}
+    color: white;
+    font-weight: 600;
+    transition: all 0.25s ease-in-out;
+    margin-top: 15px;
+  }
+  
+  .btn-success {
+    background: #22c55e;
+  }
+  
+  .btn-success:hover {
+    background: #16a34a;
+  }
+  
+  .btn-danger {
+    background: #ef4444;
+  }
+  
+  .btn-danger:hover {
+    background: #dc2626;
+  }
+  
+  /* 🌟 Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* 🌟 Responsive Design */
+  @media (max-width: 768px) {
+    .exam-container {
+      padding: 20px;
+      margin: 30px 15px;
+    }
+  
+    .option-card {
+      font-size: 0.95rem;
+      padding: 10px 14px;
+    }
+  
+    .nav-buttons button {
+      font-size: 0.9rem;
+      padding: 10px;
+    }
+  
+    .summary-box {
+      padding: 20px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .exam-container h2 {
+      font-size: 1.5rem;
+    }
+  
+    .score-live {
+      font-size: 0.95rem;
+    }
+  
+    .nav-buttons {
+      flex-direction: column;
+    }
+  }
+  .progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  
+  .progress-bar div {
+    height: 100%;
+    background: #2563eb;
+    transition: width 0.4s ease-in-out;
+  }
+  
+  

@@ -109,14 +109,17 @@ export async function getGeminiQuestions(section, limit = 5) {
 }
 
 // Generate MCQ questions based on resume skills
-export async function getMCQQuestionsBasedOnResume(skills = [], limit = 5, experienceYears) {
+export async function getMCQQuestionsBasedOnResume(skills = [], limit = 15, experienceYears) {
     const skillsText = skills.length > 0 ? skills.join(", ") : "general programming";
+    let limits=Number(limit);
+    let experience=Number(experienceYears);
     const prompt = `
-You are an expert technical interviewer. Generate exactly ${limit} unique multiple-choice questions 
+You are an expert technical interviewer. Generate exactly ${limits} unique multiple-choice questions which
+include 5 apptitude and 5 reasoning and 5 technical
 based on the following candidate skills and experience:
 
 Skills: ${skillsText}
-Experience: ${experienceYears} years
+Experience: ${experience} years
 
 Rules:
 - If experience is between 0 to 1 → easy level

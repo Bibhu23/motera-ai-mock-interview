@@ -1,76 +1,59 @@
 import React from "react";
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaEnvelope,
+  FaPhoneAlt,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 import "./Footer.css";
 
 const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-container">
-        {/* About Section */}
-        <div className="footer-section about">
-          <h5>Motera AI</h5>
-          <p>
-            Motera AI is your go-to platform for AI-driven solutions, talent discovery,
-            and skill development. Empowering developers, analysts, and businesses with cutting-edge technology.
+
+        {/* Brand Section */}
+        <div className="footer-section brand">
+          <h3 className="brand-name">Motera AI</h3>
+          <p className="brand-desc">
+            Empowering developers, analysts, and businesses with AI-driven
+            innovation, talent discovery, and skill intelligence.
           </p>
+          <div className="social-icons">
+            <a href="#"><FaFacebookF /></a>
+            <a href="#"><FaTwitter /></a>
+            <a href="#"><FaInstagram /></a>
+            <a href="#"><FaLinkedinIn /></a>
+          </div>
         </div>
 
         {/* Quick Links */}
-        <div className="footer-section links">
+        <div className="footer-section">
           <h5>Quick Links</h5>
           <ul>
             <li><a href="/features">Features</a></li>
-            <li><a href="/features#works">How It Works </a></li>
+            <li><a href="/features#works">How It Works</a></li>
             <li><a href="/privacy">Privacy Policy</a></li>
             <li><a href="/terms">Terms & Conditions</a></li>
           </ul>
         </div>
-        <div className="footer-section follow">
-          <h5>Follow Us</h5>
-          <ul className="list-unstyled">
-            <li>
-              <a href="#" className="social-icon text-white">
-                <FaFacebook size={24} className="me-3" style={{ color: "#1877F2" }} />
-                Facebook
-              </a>
-            </li>
-            <li>
-              <a href="#" className="social-icon text-white">
-                <FaTwitter size={24} className="me-3" style={{ color: "#1DA1F2" }} />
-                Twitter
-              </a>
-            </li>
-            <li>
-              <a href="#" className="social-icon text-white">
-                <FaInstagram size={24} className="me-3" style={{ color: "#E1306C" }} />
-                Instagram
-              </a>
-            </li>
-            <li>
-              <a href="#" className="social-icon text-white">
-                <FaLinkedin size={24} className="me-3" style={{ color: "#0077B5" }} />
-                LinkedIn
-              </a>
-            </li>
-          </ul>
-        </div>
 
         {/* Contact */}
-        <div className="footer-section contact">
+        <div className="footer-section">
           <h5>Contact</h5>
-          <p>Email: support@moterai.com</p>
-          <p>Phone: +91 123 456 7890</p>
-          <p>Address: 123 AI Street, Tech City, India</p>
-          <div className="social">
-            <a href="https://facebook.com" target="_blank" rel="noreferrer">FB</a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer">TW</a>
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer">IN</a>
-          </div>
+          <ul className="contact-list">
+            <li><FaEnvelope /> support@moterai.com</li>
+            <li><FaPhoneAlt /> +91 123 456 7890</li>
+            <li><FaMapMarkerAlt /> 123 AI Street, Tech City, India</li>
+          </ul>
         </div>
       </div>
 
       <div className="footer-bottom">
-        &copy; {new Date().getFullYear()} Motera AI. All rights reserved.
+        © {new Date().getFullYear()} <strong>Motera AI</strong> — All rights reserved.
       </div>
     </footer>
   );

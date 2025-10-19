@@ -8,19 +8,30 @@ import { Navigate } from "react-router-dom";
 import "./Dashboard.css";
 
 export default function Dashboard() {
-    const { backend } = React.useContext(AppContext)
+    const { backend } = useContext(AppContext);
     const { login } = useContext(AppContext);
-    const barChartRef = useRef(null)
+    const barChartRef = useRef(null);
     const pieChartRef = useRef(null);
     const [interviewRounds, setInterviewRounds] = useState([]);
+    const [darkMode, setDarkMode] = useState(() => {
+        // Load saved preference from localStorage
+        return localStorage.getItem("theme") === "dark";
+    });
 
-    // Fetch interview rounds
+    // Apply theme to <body>
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add("dark");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.body.classList.remove("dark");
+            localStorage.setItem("theme", "light");
+        }
+    }, [darkMode]);
+
     async function fetchRounds() {
         try {
-            const res = await axios.get(
-                `${backend}/user/api/v1/interview-rounds`,
-                { withCredentials: true }
-            );
+            const res = await axios.get(`${backend}/user/api/v1/interview-rounds`, { withCredentials: true });
             setInterviewRounds(res.data.rounds || []);
         } catch (err) {
             console.error("Failed to fetch rounds:", err.response?.data || err.message);
@@ -31,7 +42,6 @@ export default function Dashboard() {
         fetchRounds();
     }, []);
 
-    // Calculate summary
     const totalRounds = interviewRounds.length;
     const completedRounds = interviewRounds.filter(r => r.status === "Completed").length;
     const avgScore =
@@ -43,7 +53,6 @@ export default function Dashboard() {
             )
             : 0;
 
-    // Draw charts
     useEffect(() => {
         if (!interviewRounds.length) return;
 
@@ -128,6 +137,13 @@ export default function Dashboard() {
         <div className="dashboard">
             <Sidebar />
             <div className="main">
+                {/* Theme Toggle */}
+                <div className="theme-toggle">
+                    <button onClick={() => setDarkMode(!darkMode)}>
+                        {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+                    </button>
+                </div>
+
                 {/* Cards */}
                 <div className="dashboard-content">
                     {interviewRounds.map((r, idx) => (
@@ -135,13 +151,11 @@ export default function Dashboard() {
                             <div className="d-flex justify-content-between align-items-center">
                                 <strong>{r.round}</strong>
                                 <span
-                                    className={`badge ${r.status === "Completed" ? "bg-success" : "bg-warning"
-                                        }`}
+                                    className={`badge ${r.status === "Completed" ? "bg-success" : "bg-warning"}`}
                                 >
                                     {r.status}
                                 </span>
                             </div>
-                            {/* <h1>{r.score !== null && r.score !== undefined ? `${r.score}%` : "Pending"}</h1> */}
                             <h1>{r.score !== null ? `${r.score}%` : "Pending"}</h1>
                             <p>{r.date ? new Date(r.date).toLocaleDateString() : "-"}</p>
                         </div>
@@ -151,9 +165,7 @@ export default function Dashboard() {
                     <div className="card summary">
                         <div>Progress</div>
                         <h1>{totalRounds ? Math.round((completedRounds / totalRounds) * 100) : 0}%</h1>
-                        <p>
-                            {completedRounds} of {totalRounds} rounds done
-                        </p>
+                        <p>{completedRounds} of {totalRounds} rounds done</p>
                     </div>
 
                     <div className="card summary">

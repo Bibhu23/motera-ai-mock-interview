@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { plans } from "../Data/dummydata";
 import { AppContext } from "../context/Appcontext";
 import { toast } from "react-toastify";
-import Gpi from "../Gpi";
+
 import "./BuyCredit.css"; // Import the CSS
 import { Navigate } from "react-router-dom";
 import axios from "axios";

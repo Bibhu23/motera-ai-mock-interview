@@ -2,6 +2,7 @@ import express from "express";
 
 import { getGeminiQuestions, getOpenEndedQuestions, getMCQQuestionsBasedOnResume, getTechnicalQuestionsBasedOnResume, getHrQuestionsBased } from "../service/GeminiService.js";
 import User from "../model/userModel.js";
+import Profile from "../model/profileModel.js"
 import authMiddleware from "../middleware/Auth.js";
 
 const router = express.Router();
@@ -40,12 +41,13 @@ router.get("/mcq-based-on-resume", authMiddleware, async (req, res) => {
             return res.status(401).json({ error: "Unauthorized: User not found" });
         }
 
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = parseInt(req.query.limit) || 15;
 
         // Get user's skills from database
         const user = await User.findById(userId);
         const skills = user?.skills || [];
-        const experienceYears = user?.experienceYears || 0;
+        const profile = await Profile.findOne({ userId });
+        const experienceYears = profile?.experience || 0;
         console.log("User skills:", skills, "Experience Years:", experienceYears);
 
         const questions = await getMCQQuestionsBasedOnResume(skills, limit,experienceYears);

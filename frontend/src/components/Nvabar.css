@@ -1,0 +1,153 @@
+/* Navbar Base */
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #0d1117;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 40px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo */
+.navbar-logo img {
+  width: 130px;
+  height: 60px;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+.navbar-logo img:hover {
+  transform: scale(1.05);
+}
+
+/* Hamburger Menu (Mobile Only) */
+.menu-toggle {
+  display: none;
+  color: white;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.menu-toggle:hover {
+  color: #00bfff;
+}
+
+/* Nav Links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  list-style: none;
+  transition: all 0.3s ease;
+}
+
+.nav-links li {
+  display: flex;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-links a:hover {
+  background: rgba(0, 191, 255, 0.15);
+  color: #00bfff;
+}
+
+.nav-links a.active {
+  background: #00bfff;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+}
+
+/* Buttons */
+.trial-btn {
+  background: linear-gradient(90deg, #007bff, #00bfff);
+  color: white;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+.trial-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #00bfff, #007bff);
+}
+
+.logout-btn {
+  background: #dc3545;
+  border: none;
+  padding: 8px 16px;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.logout-btn:hover {
+  background: #ff4d5a;
+}
+
+/* Credits Pill */
+.credits-pill {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: #00bfff;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 191, 255, 0.4);
+}
+
+/* ----------------------- */
+/* Responsive Design */
+/* ----------------------- */
+
+@media (max-width: 992px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 75px;
+    right: 0;
+    background: #0d1117;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 20px;
+    transition: max-height 0.3s ease;
+  }
+
+  .nav-links.open {
+    max-height: 400px;
+    padding: 20px;
+  }
+
+  .nav-links li {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .nav-links a,
+  .logout-btn,
+  .trial-btn {
+    width: 100%;
+    text-align: left;
+    border-radius: 6px;
+  }
+}

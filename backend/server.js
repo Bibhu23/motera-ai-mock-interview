@@ -51,7 +51,7 @@ app.use("/api/gemini", geminiRoutes);
 app.use("/api", resumeRouter);
 app.use("/api", liveInterviewRouter);
 app.use("/user/api/v1", userRoundsRouter);
-app.use("/user/api/v1/profile", profileRoutes);
+app.use("/user/v1/profile", profileRoutes);
 
 //http://localhost:7656/user/api/v1/profile
 app.use("/auth", authRoutes);

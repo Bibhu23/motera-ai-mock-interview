@@ -1,185 +1,207 @@
 :root {
-  --navbar-height: 64px;
-  /* adjust to your navbar height */
-  --footer-height: 0px;
-  /* adjust if you have a footer */
+  --navbar-height: 70px;
+  --footer-height: 100px;
   --sidebar-width: 250px;
-  /* desktop sidebar width */
-  --gap: 24px;
-  --bg: #f7f8fa;
+  --bg: #f5f7fa;
   --card-bg: #ffffff;
-  --muted: #64748b;
-  --accent: #2b6cb0;
-  --radius: 12px;
-  --shadow-sm: 0 4px 16px rgba(2, 6, 23, 0.06);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --accent: #2563eb;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --radius: 14px;
+  --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* -------------------- Page layout -------------------- */
-/* Desktop: two-column layout (sidebar + main) */
+/* -------------------- Layout -------------------- */
 .dashboard {
   display: flex;
   min-height: 100vh;
   background: var(--bg);
-  gap: var(--gap);
-  align-items: flex-start;
-  padding: 0;
-  box-sizing: border-box;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
 }
 
 /* -------------------- Sidebar -------------------- */
-/* Sidebar sits below the navbar (sticky) and won't overlap it */
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: var(--sidebar-width);
-  position: sticky;
-  top: var(--navbar-height);
-  height: calc(100vh - var(--navbar-height) - var(--footer-height));
-  background: linear-gradient(180deg, #263544, #1f2d3a);
-  color: #fff;
-  padding: 20px;
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: var(--shadow-sm);
-  overflow: auto;
+  height: 100vh;
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  color: #e2e8f0;
+  padding: 24px;
+  overflow-y: auto;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
+  z-index: 10;
 }
 
-/* Sidebar content */
 .sidebar h2 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  letter-spacing: 0.2px;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #f1f5f9;
 }
 
 .sidebar ul {
-  margin: 12px 0 0;
-  padding: 0;
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .sidebar li {
-  margin: 10px 0;
+  margin: 12px 0;
 }
 
 .sidebar a {
   display: block;
-  color: #e6eef6;
+  padding: 10px 14px;
+  border-radius: 10px;
   text-decoration: none;
-  padding: 8px 10px;
-  border-radius: 8px;
-  transition: background .18s, color .18s;
+  color: #cbd5e1;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
 }
 
-.sidebar a:hover {
-  background: rgba(255, 255, 255, 0.04);
+.sidebar a:hover,
+.sidebar a.active {
+  background: rgba(59, 130, 246, 0.15);
   color: #fff;
+  transform: translateX(4px);
 }
 
 /* -------------------- Main content -------------------- */
-/* Main should reserve space for sidebar and not be overlapped by navbar */
 .main {
+  margin-left: var(--sidebar-width);
   flex: 1;
-  padding: calc(var(--navbar-height) + 24px) 28px 28px 28px;
-  /* push below navbar */
-  box-sizing: border-box;
+  padding: 32px;
+  background: var(--bg);
   min-height: 100vh;
+  transition: all 0.3s ease-in-out;
 }
 
-/* If your app renders a fixed navbar with higher z-index, this keeps content visible below it */
-@media (max-width: 1024px) {
-  .main {
-    padding-top: calc(var(--navbar-height) + 18px);
-  }
-}
-
-/* -------------------- Cards grid (3 columns) -------------------- */
+/* -------------------- Dashboard Cards -------------------- */
 .dashboard-content {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  /* 3 cards horizontally on wide screens */
-  gap: 24px;
-  width: 100%;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  margin-bottom: 40px;
 }
 
-/* Individual card */
 .card {
   background: var(--card-bg);
-  padding: 22px;
   border-radius: var(--radius);
-  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
-  text-align: left;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.card .top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  color: var(--muted);
-  font-weight: 600;
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
 .card h1 {
-  margin: 6px 0 8px 0;
-  font-size: 28px;
-  color: #0f172a;
+  margin: 8px 0 10px 0;
+  font-size: 30px;
+  color: var(--text-dark);
+  font-weight: 700;
 }
 
 .card p {
-  margin: 0;
-  color: var(--muted);
+  color: var(--text-muted);
+  font-size: 14px;
 }
 
-/* Summary card variant */
 .card.summary {
-  text-align: left;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+.card.summary h1 {
+  color: #fff;
+}
+
+.card.summary p {
+  color: #e0e7ff;
+}
+
+/* -------------------- Badges -------------------- */
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.bg-success {
+  background: var(--success);
+  color: #fff;
+}
+
+.bg-warning {
+  background: var(--warning);
+  color: #fff;
 }
 
 /* -------------------- Charts -------------------- */
 .chart-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 24px;
-  margin-top: 8px;
-  align-items: stretch;
+  margin-top: 16px;
 }
 
 .chart-box {
   flex: 1;
+  min-width: 340px;
   background: var(--card-bg);
-  padding: 18px;
+  padding: 22px;
   border-radius: var(--radius);
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.04);
+  box-shadow: var(--shadow);
+  transition: all 0.25s ease;
+}
+
+.chart-box:hover {
+  transform: scale(1.01);
 }
 
 .chart-box canvas {
   width: 100% !important;
-  height: 320px !important;
-  max-height: 420px;
-  display: block;
+  height: 340px !important;
 }
 
-/* -------------------- Responsive behavior -------------------- */
-/* Medium screens: 2 columns */
-@media (max-width: 1200px) {
-  .dashboard-content {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* -------------------- Scrollbar Styling -------------------- */
+.sidebar::-webkit-scrollbar,
+.main::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  /* sidebar narrower on medium screens */
+.sidebar::-webkit-scrollbar-thumb,
+.main::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+/* -------------------- Responsive -------------------- */
+@media (max-width: 1024px) {
   .sidebar {
     width: 220px;
   }
 
   .main {
-    padding-left: 22px;
-    padding-right: 22px;
+    margin-left: 220px;
+    padding: 24px;
   }
 }
 
-/* Small screens: stack sidebar above main, cards 1 column */
 @media (max-width: 768px) {
   .dashboard {
     flex-direction: column;
@@ -187,16 +209,14 @@
 
   .sidebar {
     position: relative;
-    top: 0;
     width: 100%;
     height: auto;
-    border-right: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    padding: 16px;
   }
 
   .main {
     margin-left: 0;
-    padding: 16px;
+    padding: 20px;
   }
 
   .dashboard-content {
@@ -208,58 +228,77 @@
   }
 }
 
-/* Very small screens adjustments */
-@media (max-width: 480px) {
-  :root {
-    --sidebar-width: 100%;
+/* -------------------- Animation -------------------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-
-  .sidebar {
-    padding: 14px;
-  }
-
-  .main {
-    padding: 12px;
-  }
-
-  .card {
-    padding: 16px;
-    min-height: 140px;
-  }
-
-  .chart-box canvas {
-    height: 240px !important;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* -------------------- Accessibility & utilities -------------------- */
-.badge {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.85rem;
+.card,
+.chart-box {
+  animation: fadeIn 0.5s ease-in-out;
+}
+/* -------------------- DARK MODE -------------------- */
+body.dark {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --text-dark: #f1f5f9;
+  --text-muted: #94a3b8;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: var(--bg);
+  color: var(--text-dark);
+  transition: all 0.3s ease-in-out;
 }
 
-.bg-success {
-  background: #16a34a;
+body.dark .sidebar {
+  background: linear-gradient(180deg, #111827, #1f2937);
+  color: #e2e8f0;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+body.dark .card {
+  background: var(--card-bg);
+  color: var(--text-dark);
+}
+
+body.dark .card.summary {
+  background: linear-gradient(145deg, #1e40af, #1e3a8a);
+}
+
+body.dark .chart-box {
+  background: var(--card-bg);
+}
+
+body.dark .badge.bg-warning {
+  background: #facc15;
+  color: #1f2937;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.theme-toggle button {
+  background: var(--card-bg);
+  color: var(--text-dark);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.theme-toggle button:hover {
+  background: var(--accent);
   color: #fff;
-}
-
-.bg-warning {
-  background: #f59e0b;
-  color: #fff;
-}
-
-/* ensure long lists don't push page out of view */
-.sidebar::-webkit-scrollbar,
-.main::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-
-.sidebar::-webkit-scrollbar-thumb,
-.main::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
 }

@@ -1,71 +1,106 @@
-import { Link } from "react-router-dom";
-import { useContext } from "react";
+import React, { useState, useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { AppContext } from "../context/Appcontext";
+import { FaBars, FaTimes } from "react-icons/fa";
 import motera_logo from "../components/motera_logo.png";
+import "./Nvabar.css";
 
 function Navbar() {
   const { credit, login, logoutUser } = useContext(AppContext);
+  const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleLogout = () => logoutUser();
+  const handleLogout = () => {
+    logoutUser();
+    setMenuOpen(false);
+  };
 
   return (
-    <nav className="navbar bg-dark navbar-dark px-4">
-      <div className="d-flex align-items-center">
-        <Link className="navbar-brand d-flex align-items-center" to="/">
-          <img
-            src={motera_logo}
-            alt="Motera Logo"
-            style={{
-              width: "150px",
-              height: "70px",
-              marginRight: "10px",
-              borderRadius: "8px",
-            }}
-          />
+    <nav className="navbar">
+      {/* Logo Section */}
+      <div className="navbar-logo">
+        <Link to="/">
+          <img src={motera_logo} alt="Motera Logo" />
         </Link>
       </div>
 
-      <ul className="navbar-nav flex-row ms-auto">
-        <li className="nav-item mx-3">
-          <Link className="nav-link text-white" to="/features">
+      {/* Hamburger for Mobile */}
+      <div className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
+        {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+      </div>
+
+      {/* Navigation Links */}
+      <ul className={`nav-links ${menuOpen ? "open" : ""}`}>
+        <li>
+          <Link
+            to="/"
+            className={location.pathname === "/" ? "active" : ""}
+            onClick={() => setMenuOpen(false)}
+          >
+            Home
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/features"
+            className={location.pathname === "/features" ? "active" : ""}
+            onClick={() => setMenuOpen(false)}
+          >
             Features
           </Link>
         </li>
-        <li className="nav-item mx-3">
-          <a className="nav-link text-white" href="/features#works">
+        <li>
+          <a
+            href="/features#works"
+            className={location.hash === "#works" ? "active" : ""}
+            onClick={() => setMenuOpen(false)}
+          >
             How It Works
           </a>
         </li>
-        <li className="nav-item mx-3">
-          <a className="nav-link text-white" href="/features#feedback">
+        <li>
+          <a
+            href="/features#feedback"
+            className={location.hash === "#feedback" ? "active" : ""}
+            onClick={() => setMenuOpen(false)}
+          >
             Success Stories
           </a>
         </li>
 
         {login ? (
-          <li className="nav-item mx-3">
-            <button className="btn btn-danger" onClick={handleLogout}>
+          <li>
+            <button className="logout-btn" onClick={handleLogout}>
               Logout
             </button>
           </li>
         ) : (
-          <li className="nav-item mx-3">
-            <Link className="nav-link text-white" to="/login">
+          <li>
+            <Link
+              to="/login"
+              className={location.pathname === "/login" ? "active" : ""}
+              onClick={() => setMenuOpen(false)}
+            >
               Sign In
             </Link>
           </li>
         )}
 
-        <li className="nav-item mx-3">
-          <Link className="btn btn-primary" to="/signup">
+        <li>
+          <Link
+            to="/signup"
+            className="trial-btn"
+            onClick={() => setMenuOpen(false)}
+          >
             🚀 Start Free Trial
           </Link>
         </li>
       </ul>
 
+      {/* Credits Display */}
       {login && (
-        <div className="position-fixed bottom-0 end-0 m-3 p-2 px-3 bg-info text-white rounded-pill shadow">
-          Credits: {credit}
+        <div className="credits-pill">
+          Credits: <strong>{credit}</strong>
         </div>
       )}
     </nav>
