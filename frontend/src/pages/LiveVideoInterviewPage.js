@@ -5,7 +5,6 @@ import "./LiveVideoInterviewPage.css";
 import * as faceapi from "face-api.js";
 import { AppContext } from "../context/Appcontext";
 
-
 function LiveVideoInterviewPage() {
   const { backend } = React.useContext(AppContext)
   const videoRef = useRef(null);
@@ -29,8 +28,10 @@ function LiveVideoInterviewPage() {
   const [recordingTime, setRecordingTime] = useState(90); // 90 sec recording
   const [forceRecord, setForceRecord] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
-  const timerRef = useRef(null); // To store interval ID
+  // replaced single boolean with a per-question map: key = questionIndex, value = true when recorded
+  const [hasRecordedMap, setHasRecordedMap] = useState({});
 
+  const timerRef = useRef(null); // To store interval ID
 
   const navigate = useNavigate();
 
@@ -197,6 +198,8 @@ function LiveVideoInterviewPage() {
       setInterviewStarted(true);
       setQuestionIndex(0);
       setShow(true);
+      // clear per-question recorded state when starting a new interview
+      setHasRecordedMap({});
     } catch (err) {
       console.error("Failed to fetch questions:", err);
       alert("Failed to load interview questions. Please try again.");
@@ -205,41 +208,33 @@ function LiveVideoInterviewPage() {
 
   // ---------------- RECORDING LOGIC ----------------
   const startRecording = () => {
+    // prevent starting multiple times for the same question
+    if (hasRecordedMap[questionIndex]) return;
     if (!mediaStream) {
       alert("No media stream available. Please allow camera and mic.");
       return;
     }
 
+    // mark this question as recorded to prevent multiple starts for same Q
+    setHasRecordedMap((prev) => ({ ...prev, [questionIndex]: true }));
+
+    // ensure previous recorded chunks cleared
+    setRecordedChunks([]);
     const audioTracks = mediaStream.getAudioTracks();
-    if (!audioTracks || audioTracks.length === 0) {
-      alert("No microphone detected or permission denied.");
-      return;
-    }
-
     const audioStream = new MediaStream([audioTracks[0]]);
-    let recorder;
     let localChunks = [];
-
-    try {
-      recorder = new MediaRecorder(audioStream, {
-        mimeType: "audio/webm;codecs=opus",
-      });
-    } catch (err) {
-      console.error("MediaRecorder not supported:", err);
-      alert(
-        "Recording is not supported in this browser. Use latest Chrome/Edge."
-      );
-      return;
-    }
+    const recorder = new MediaRecorder(audioStream, {
+      mimeType: "audio/webm;codecs=opus",
+    });
 
     recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) localChunks.push(e.data);
     };
 
     recorder.onstop = async () => {
-      clearInterval(timerRef.current); // stop timer
+      clearInterval(timerRef.current);
       setRecording(false);
-      setTimeLeft(90); // reset timer for next question
+      setTimeLeft(90);
       if (!localChunks || localChunks.length === 0) {
         setFeedback({ score: 0, feedback: "No valid audio recorded." });
         return;
@@ -251,12 +246,13 @@ function LiveVideoInterviewPage() {
     recorder.start();
     setMediaRecorder(recorder);
     setRecording(true);
-
   };
 
+
   const stopRecording = () => {
+    if (!recording) return; // prevent multiple stops
     if (mediaRecorder) mediaRecorder.stop();
-    setRecording(false); // stops timer
+    setRecording(false);
   };
 
   // ---------------- UPLOAD & TRANSCRIBE ----------------
@@ -316,27 +312,27 @@ function LiveVideoInterviewPage() {
 
   const nextQuestion = async () => {
     setFeedback(null); // hide old feedback
-    setQuestionIndex((prev) => prev + 1);
-    setTimeLeft(90); // reset timer for next question
-    setRecording(false);
-
-    if (questionIndex + 1 >= totalQuestions) {
+    if (questionIndex + 1 < totalQuestions) {
+      setQuestionIndex((prev) => prev + 1);
+      setTimeLeft(90); // reset timer for next question
+      setRecording(false);
+      // note: we intentionally do NOT clear hasRecordedMap here so user can only record once per question
+    } else {
+      // Last question done → prepare result
       const maxScore = totalQuestions * 10;
       const pct = Math.round((scoreTotal / maxScore) * 100);
       const eligible = pct > 50;
 
-      alert(
-        `🎯 Interview finished! Overall correctness: ${pct}%.\n` +
-        `Candidate is ${eligible ? "eligible ✅" : "not eligible ❌"
-        } for HR round.`
-      );
-
-      await handleLiveVideoComplete(scoreTotal);
-      navigate("/hrround");
-      return;
+      // Navigate to result page
+      navigate("/technical-result", {
+        state: {
+          totalScore: scoreTotal,
+          totalQuestions,
+          eligible,
+        },
+      });
     }
   };
-
   const restartCamera = async () => {
     console.log("🔄 Restarting camera...");
     setCameraReady(false);
@@ -425,28 +421,12 @@ function LiveVideoInterviewPage() {
       alert("Failed to save score. Try again!");
     }
   };
-
   return (
     <div className="myapp">
       <h1>Live Mock Interview</h1>
 
-      {!ison && (
-        <>
-          {show && (
-            <>
-              {!cameraReady && permissionsGranted && (
-                <div className="camera-status">
-                  <button onClick={restartCamera} style={{ marginLeft: "10px" }}>
-                    On Camera
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
-
-      {!permissionsGranted && (
+      {/* --- Permission Request Section --- */}
+      {!ison && !permissionsGranted && (
         <div className="permission-section">
           <h2>Camera & Microphone Access Required</h2>
           <p>Please allow camera and microphone access to continue.</p>
@@ -454,6 +434,7 @@ function LiveVideoInterviewPage() {
         </div>
       )}
 
+      {/* --- Start Interview Section --- */}
       {permissionsGranted && !interviewStarted && (
         <div className="start-section">
           <h2>Ready to Start Mock Interview?</h2>
@@ -465,107 +446,113 @@ function LiveVideoInterviewPage() {
         </div>
       )}
 
+      {/* --- Interview Section --- */}
       {interviewStarted && (
-        <>
-          <div className="appvide">
+        <div className="interview-container">
+          {/* Video Section */}
+          <div className="video-wrapper">
             <video
               id="interviewVideo"
               ref={videoRef}
               autoPlay
               muted
               playsInline
-              style={{ backgroundColor: "black" }}
             />
+            {!cameraReady && (
+              <div className="camera-status">
+                <p>Camera not ready</p>
+                <button onClick={restartCamera}>Restart Camera</button>
+              </div>
+            )}
           </div>
 
-          <div className="question-section">
-            <div className="timer">
-              {!readingTimeOver ? (
-                <span className={readingTimeLeft <= 5 ? "pulse-red" : ""}>
-                  Reading Time Left: {readingTimeLeft}s
-                </span>
-              ) : recording ? (
-                <span className={recordingTime <= 5 ? "pulse-red" : ""}>
-                  Recording Time Left: {Math.floor(recordingTime / 60)}:
-                  {String(recordingTime % 60).padStart(2, "0")}
-                </span>
+          {/* Questions & Feedback Section */}
+          <div className="question-controls">
+            <div className="question-section">
+              <div className="timer">
+                {/* Removed top reading time display per request.
+                    Only show recording timer while recording.
+                    If not recording, show "Time's up!" when forced. */}
+                {recording ? (
+                  <span className={recordingTime <= 5 ? "pulse-red" : ""}>
+                    Recording Time Left: {Math.floor(recordingTime / 60)}:
+                    {String(recordingTime % 60).padStart(2, "0")}
+                  </span>
+                ) : (
+                  <span>{forceRecord ? "Time's up!" : ""}</span>
+                )}
+              </div>
+
+              <h2>
+                Question {questionIndex + 1} of {totalQuestions}:
+              </h2>
+              <p>{question}</p>
+              {/* Start / Stop Recording Buttons */}
+              {!recording ? (
+                <button
+                  onClick={startRecording}
+                  disabled={!!hasRecordedMap[questionIndex] || !readingTimeOver}
+                  title={
+                    !readingTimeOver
+                      ? `Reading Time Left: ${readingTimeLeft}s`
+                      : undefined
+                  }
+                >
+                  {!readingTimeOver ? `Reading Time Left: ${readingTimeLeft}s` : "Start Recording Answer"}
+                </button>
               ) : (
-                <span>{forceRecord ? "Time's up!" : ""}</span>
+                <button
+                  onClick={stopRecording}
+                  disabled={!recording}
+                >
+                  Stop & Submit Answer
+                </button>
               )}
+
             </div>
 
-            {ison && (
-              <>
-                <h2>
-                  Question {questionIndex + 1} of {totalQuestions}:
-                </h2>
-                <p>{question}</p>
-              </>
-            )}
+            {/* Feedback Section */}
+            {feedback && (
+              <div className="feedback-section">
+                <h2>Feedback</h2>
+                <p>
+                  <strong>Score:</strong> {feedback.score}/10
+                </p>
+                <p>
+                  <strong>Comments:</strong> {feedback.feedback}
+                </p>
 
-            {!recording && (
-              <button onClick={startRecording}>Start Recording Answer</button>
-            )}
-            {recording && (
-              <button onClick={stopRecording}>Stop & Submit Answer</button>
+                {/* Next Question Button */}
+                {questionIndex + 1 < totalQuestions && (
+                  <button onClick={nextQuestion}>Next Question</button>
+                )}
+
+                {/* Final Feedback + View Result */}
+                {questionIndex + 1 >= totalQuestions && (
+                  <div className="final-feedback">
+                    <h2>Technical Round Completed</h2>
+
+                    {/* Only show View Result button as requested */}
+                    <button
+                      className="view-result-btn"
+                      onClick={() => {
+                        const maxScore = totalQuestions * 10;
+                        const pct = Math.round((scoreTotal / maxScore) * 100);
+                        const eligible = pct > 50;
+
+                        navigate("/technical-result", {
+                          state: { totalScore: scoreTotal, totalQuestions, eligible },
+                        });
+                      }}
+                    >
+                      View Result
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-
-          {feedback && (
-            <div className="feedback-section">
-              <h2>Feedback</h2>
-              <p>
-                <strong>Score:</strong> {feedback.score}/10
-              </p>
-              <p>
-                <strong>Comments:</strong> {feedback.feedback}
-              </p>
-
-              {questionIndex + 1 < totalQuestions && (
-                <button onClick={nextQuestion}>Next Question</button>
-              )}
-
-              {questionIndex + 1 >= totalQuestions && (
-                <div>
-                  <h2>Technical Round Completed</h2>
-                  <p>
-                    Total Score: {scoreTotal}/{totalQuestions * 10} (
-                    {Math.round(
-                      (scoreTotal / (totalQuestions * 10)) * 100
-                    )}
-                    %)
-                  </p>
-                  <p>
-                    Eligibility:{" "}
-                    {scoreTotal > (totalQuestions * 10) / 2
-                      ? "Eligible ✅"
-                      : "Not Eligible ❌"}
-                  </p>
-
-                  {scoreTotal > (totalQuestions * 10) / 2 ? (
-                    <button
-                      onClick={async () => {
-                        await handleLiveVideoComplete(scoreTotal);
-                        navigate("/hrround");
-                      }}
-                    >
-                      Proceed to HR Round
-                    </button>
-                  ) : (
-                    <button
-                      onClick={async () => {
-                        await handleLiveVideoComplete(scoreTotal);
-                        alert("Candidate not eligible for HR round.");
-                      }}
-                    >
-                      Finish Technical Round
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );

@@ -18,19 +18,20 @@ import ProfilePage from './pages/ProfilePage';
 import HrInterviewPage from './pages/Hrround';
 import ProfileViewPage from './pages/Profileviewpage';
 import HrResultPage from "./pages/HrResultPage";
+import LiveVideoResultPage from './pages/LiveVideoResultPage'
 import { AppContext } from './context/Appcontext';
 import { useContext } from 'react';
 import { useEffect } from 'react';
 function App() {
   const location = useLocation();
-const {login}=useContext(AppContext);
-const navigate=useNavigate();
-   
-useEffect(() => {
-  if (!login && location.pathname !== "/login" && location.pathname !== "/signup") {
-    navigate("/login");
-  }
-}, [login, location, navigate]);
+  const { login } = useContext(AppContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!login && location.pathname !== "/login" && location.pathname !== "/signup") {
+      navigate("/login");
+    }
+  }, [login, location, navigate]);
   // routes where navbar/footer should be hidden
   const hideLayoutRoutes = ["/login", "/signup"];
 
@@ -58,11 +59,12 @@ useEffect(() => {
           <Route path="/hrround" element={<HrInterviewPage />} />
           <Route path="/profile/view" element={<ProfileViewPage />} />
           <Route path="/hr-result" element={<HrResultPage />} />
+          <Route path='/technical-result' element={<LiveVideoResultPage />} />
         </Routes>
       </div>
 
       {!hideLayout && <Footer />}
-      
+
     </div>
   );
 }

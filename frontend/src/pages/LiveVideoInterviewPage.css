@@ -2,116 +2,206 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 100vw;
-    height: 100vh;
-    background-color: #f0f0f0;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 100vh;
     gap: 20px;
+    padding: 20px;
+    background: #f5f5f5;
 }
 
-.appvide {
-    position: relative;
-    width: 640px;
-    height: 480px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    background-color: black;
-    /* helps debugging video container */
+.interview-container {
+    display: flex;
+    flex-direction: row;
+    /* side-by-side */
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
 }
 
-#interviewVideo {
+.video-wrapper {
+    flex: 1;
+    min-width: 300px;
+    max-width: 640px;
+    max-height: 70vh;
+}
+
+.video-wrapper video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 10px;
+    background-color: black;
 }
 
-.appcanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 640px;
-    height: 480px;
-    pointer-events: none;
+.question-controls {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-bottom: 20px;
 }
 
-.permission-section,
-.start-section {
-    text-align: center;
-    padding: 20px;
+.question-section,
+.feedback-section {
     background: white;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    margin: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
-.permission-section button,
-.start-section button {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+.question-section button,
+.feedback-section button {
+    width: 100%;
+    max-width: 250px;
     margin-top: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.permission-section button:hover,
-.start-section button:hover {
-    background: #0056b3;
+.question-section button {
+    background: linear-gradient(90deg, #ff7f91, #ff9472);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(255, 148, 114, 0.5);
+}
+
+.question-section button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(255, 148, 114, 0.7);
 }
 
 .feedback-section button {
-    margin-top: 12px;
-    padding: 8px 12px;
+    background: linear-gradient(90deg, #007bff, #00c6ff);
+    color: white;
+}
+
+.permission-section,
+.start-section,
+.camera-status {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.permission-section button,
+.start-section button,
+.camera-status button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.permission-section button:hover,
+.start-section button:hover,
+.camera-status button:hover {
+    background: #0056b3;
 }
 
 .camera-status {
-    text-align: center;
-    padding: 15px;
     background: #fff3cd;
     border: 1px solid #ffeaa7;
-    border-radius: 5px;
-    margin: 10px;
     color: #856404;
 }
 
-.camera-status button {
-    background: #ffc107;
-    color: #212529;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.camera-status button:hover {
-    background: #e0a800;
-}
-
 @keyframes pulse {
-    0% {
+
+    0%,
+    100% {
         color: red;
         opacity: 1;
     }
 
     50% {
         color: #ff6666;
-        /* slightly dimmer red */
         opacity: 0.6;
-    }
-
-    100% {
-        color: red;
-        opacity: 1;
     }
 }
 
 .pulse-red {
     animation: pulse 1s infinite;
-    /* adjust duration for slower/faster pulse */
     font-weight: bold;
+}
+
+@media (max-width: 900px) {
+    .interview-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .video-wrapper,
+    .question-controls {
+        width: 90%;
+    }
+}
+
+/* Container for final feedback */
+.final-feedback {
+    margin-top: 20px;
+    padding: 20px;
+    border: 2px solid #4caf50;
+    /* green border */
+    border-radius: 12px;
+    background-color: #f0fff4;
+    /* light green background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Headings in final feedback */
+.final-feedback h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    color: #2e7d32;
+}
+
+/* Paragraphs */
+.final-feedback p {
+    font-size: 1.1rem;
+    margin: 8px 0;
+    color: #333;
+}
+
+/* View Result Button */
+.view-result-btn {
+    margin-top: 15px;
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #4caf50;
+    /* green */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.view-result-btn:hover {
+    background-color: #388e3c;
+    /* darker green on hover */
+    transform: scale(1.05);
+}
+
+.view-result-btn:active {
+    transform: scale(0.95);
 }
