@@ -1,7 +1,8 @@
+/* Base Footer Styles */
 .footer {
   background: #0d0d0d;
   color: #dcdcdc;
-  padding: 40px 6%;
+  padding: clamp(30px, 4vw, 40px) clamp(20px, 6%, 60px);
   font-family: "Poppins", sans-serif;
   display: flex;
   flex-direction: column;
@@ -10,43 +11,45 @@
 }
 
 .footer-container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(25px, 4vw, 40px);
+  width: 100%;
 }
 
 /* Brand Section */
 .brand-name {
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 10px;
+  margin-bottom: clamp(8px, 1.5vw, 10px);
 }
 
 .brand-desc {
-  font-size: 0.9rem;
+  font-size: clamp(0.875rem, 1vw, 0.9rem);
   color: #bbbbbb;
   line-height: 1.6;
-  margin-bottom: 15px;
+  margin-bottom: clamp(12px, 2vw, 15px);
+  max-width: 90ch;
 }
 
 .social-icons {
   display: flex;
-  gap: 12px;
+  gap: clamp(10px, 1.5vw, 12px);
+  flex-wrap: wrap;
 }
 
 .social-icons a {
   background: #1e1e1e;
   color: #ffffff;
   border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  width: clamp(30px, 4vw, 34px);
+  height: clamp(30px, 4vw, 34px);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  font-size: 16px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  font-size: clamp(14px, 1.5vw, 16px);
 }
 
 .social-icons a:hover {
@@ -56,23 +59,25 @@
 
 /* Footer Sections */
 .footer-section {
-  min-width: 200px;
+  min-width: unset;
+  width: 100%;
 }
 
 .footer-section h5 {
   color: #ffffff;
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 1.2vw, 1rem);
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: clamp(8px, 1.5vw, 10px);
   position: relative;
+  padding-bottom: 8px;
 }
 
 .footer-section h5::after {
   content: "";
   position: absolute;
-  bottom: -4px;
+  bottom: 0;
   left: 0;
-  width: 30px;
+  width: clamp(25px, 4vw, 30px);
   height: 2px;
   background: #00bfff;
   border-radius: 2px;
@@ -85,68 +90,101 @@
 }
 
 .footer-section ul li {
-  margin-bottom: 8px;
+  margin-bottom: clamp(6px, 1vw, 8px);
 }
 
 .footer-section ul li a {
   color: #dcdcdc;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 1vw, 0.9rem);
   transition: color 0.3s ease;
+  display: inline-block;
 }
 
 .footer-section ul li a:hover {
   color: #00bfff;
+  transform: translateX(5px);
 }
 
 /* Contact Section */
-.contact-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
 .contact-list li {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
+  gap: clamp(6px, 1vw, 8px);
+  margin-bottom: clamp(8px, 1.2vw, 10px);
+  font-size: clamp(0.85rem, 1vw, 0.9rem);
   color: #cccccc;
 }
 
 .contact-list li svg {
   color: #00bfff;
-  font-size: 14px;
+  font-size: clamp(12px, 1.2vw, 14px);
+  flex-shrink: 0;
 }
 
 /* Footer Bottom */
 .footer-bottom {
   text-align: center;
-  padding-top: 15px;
+  padding-top: clamp(12px, 2vw, 15px);
   border-top: 1px solid #1e1e1e;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 1vw, 0.85rem);
   color: #999;
-  margin-top: 30px;
+  margin-top: clamp(25px, 3vw, 30px);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Enhanced Responsive Design */
+@media (max-width: 1024px) {
   .footer-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 25px 15px;
   }
 
-  .social-icons {
-    justify-content: flex-start;
+  .footer-container {
+    grid-template-columns: 1fr;
   }
 
   .footer-section {
-    width: 100%;
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .social-icons {
+    justify-content: center;
   }
 
+  .footer-section h5 {
+    text-align: center;
+  }
+
+  .footer-section h5::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .footer-section ul {
+    text-align: center;
+  }
+
+  .contact-list li {
+    justify-content: center;
+  }
+}
+
+/* Print Styles */
+@media print {
   .footer {
-    padding: 30px 20px;
+    background: none;
+    color: #000;
+    border-top: 1px solid #ccc;
+  }
+
+  .social-icons {
+    display: none;
   }
 }

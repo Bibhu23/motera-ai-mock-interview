@@ -7,9 +7,13 @@ import { uploadResume, saveProfile, getProfile } from "../services/profileServic
 import "./ProfilePage.css";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
+import { fetchJobs } from "../services/jobService";
 
 const ProfilePage = () => {
+
+    const [jobSuggestions, setJobSuggestions] = useState([]);
+    const [jobsLoading, setJobsLoading] = useState(false);
+
 
     const { login } = useContext(AppContext);
     const navigate = useNavigate();
@@ -30,7 +34,7 @@ const ProfilePage = () => {
         education: [],
         resume: null,
         certifications: [],
-
+        preferredLocations: []
     });
 
     const [completion, setCompletion] = useState(0);
@@ -154,11 +158,24 @@ const ProfilePage = () => {
         }
     };
 
+    const handleFetchJobs = async () => {
+        if (!profile.skills || !(profile.preferredLocations && profile.preferredLocations.length > 0)) return;
+
+        setJobsLoading(true);
+        try {
+            const skillsArray = profile.skills.split(",").map(s => s.trim()).filter(s => s);
+            const jobs = await fetchJobs(skillsArray, profile.preferredLocations);
+            console.log("Fetched jobs:", jobs); // debug
+            setJobSuggestions(jobs || []);
+        } catch (err) {
+            console.error("Failed to fetch jobs:", err);
+        } finally {
+            setJobsLoading(false);
+        }
+    };
+
     return (
         <div className="profile-page">
-
-       
-
             <div className="main">
 
                 {/* <DashboardNavbar user={{ name: "Bibhu", avatar: "" }} /> */}
@@ -281,6 +298,43 @@ const ProfilePage = () => {
                         />
                     </div>
 
+                    <div className="form-group">
+                        <label>Preferred Job Locations (max 3)</label>
+                        <input
+                            type="text"
+                            placeholder="Type location and press Enter"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    const value = e.target.value.trim();
+                                    if (value && !profile.preferredLocations.includes(value) && profile.preferredLocations.length < 3) {
+                                        setProfile(prev => ({
+                                            ...prev,
+                                            preferredLocations: [...prev.preferredLocations, value]
+                                        }));
+                                        e.target.value = "";
+                                    }
+                                }
+                            }}
+                        />
+                        <div className="selected-locations">
+                            {(profile.preferredLocations || []).map((loc, idx) => (
+                                <span key={idx} className="location-tag">
+                                    {loc}
+                                    <button
+                                        onClick={() =>
+                                            setProfile(prev => ({
+                                                ...prev,
+                                                preferredLocations: (prev.preferredLocations || []).filter((l, i) => i !== idx)
+                                            }))
+                                        }
+                                    >
+                                        x
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
                     <div className="form-group">
                         <label>Hobbies & Interests</label>
                         <textarea
@@ -478,9 +532,26 @@ const ProfilePage = () => {
                     {message && <p className="message">{message}</p>}
 
                 </div>
+                <div className="job-suggestions">
+                    <h4>Job Suggestions</h4>
+                    <button onClick={handleFetchJobs} disabled={jobsLoading}>
+                        {jobsLoading ? "Fetching Jobs..." : "Get Jobs"}
+                    </button>
 
+                    {jobSuggestions.length > 0 && (
+                        <div className="jobs-list">
+                            {jobSuggestions.map(job => (
+                                <div key={job.id} className="job-card">
+                                    <h5>{job.title}</h5>
+                                    <p><strong>Company:</strong> {job.company.display_name}</p>
+                                    <p><strong>Location:</strong> {job.location.display_name}</p>
+                                    <a href={job.redirect_url} target="_blank" rel="noopener noreferrer">Apply Now</a>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-
         </div>
     );
 };

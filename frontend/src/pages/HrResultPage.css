@@ -1,0 +1,114 @@
+.result-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+}
+
+.result-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.result-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.stars {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.star {
+    font-size: 2rem;
+    margin: 0 4px;
+}
+
+.star.full {
+    color: #ffc107;
+}
+
+.star.half {
+    color: #ffb300;
+}
+
+.star.empty {
+    color: #ccc;
+}
+
+.result-text {
+    font-size: 1.1rem;
+    margin: 10px 0;
+    color: #555;
+}
+
+.motivation-text {
+    margin-top: 1rem;
+    font-size: 1rem;
+    font-style: italic;
+    color: #666;
+}
+
+.hr-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.hr-button.success {
+    background-color: #28a745;
+}
+
+.hr-button.danger {
+    background-color: #dc3545;
+}
+
+.hr-button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+    .result-card {
+        padding: 1.5rem;
+    }
+
+    .result-title {
+        font-size: 1.5rem;
+    }
+
+    .star {
+        font-size: 1.6rem;
+    }
+
+    .hr-button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+    }
+}

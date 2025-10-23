@@ -10,6 +10,7 @@ import paymentrouter from "./route/payment.js";
 import cookieParser from "cookie-parser";
 import geminiRoutes from "./route/gemini.route.js"
 import initInterviewSocket from "./handler/interViewSocket.js";
+import jobRoutes from "./route/jobRoutes.js";
 // import interViewRouter from "./route/interview.route.js"
 // import {initLiveInterviewSocket} from "./handler/LiveinterviewSocket.js"
 import { createServer } from "http";
@@ -57,6 +58,8 @@ app.use("/user/v1/profile", profileRoutes);
 app.use("/auth", authRoutes);
 app.use("/user/api/v1", round3Routes);
 app.use("/user/api/v1", hrRoute);
+
+app.use("/api", jobRoutes)
 
 const startServer = async () => {
     try {
