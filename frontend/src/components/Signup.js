@@ -6,6 +6,10 @@ import bgImg from "../assets/moterabac.jfif";
 import { FcGoogle } from "react-icons/fc";
 import { AppContext } from "../context/Appcontext";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+import { account } from "../appwrite";
+
 
 export default function Signup() {
     const { backend } = React.useContext(AppContext)
@@ -39,11 +43,21 @@ export default function Signup() {
     };
 
     const handleGoogleSignup = () => {
-        window.location.href = `${backend}`;
+        window.location.href = `${backend}/auth/google`;
+    };
+    const handleGoogleLogin = () => {
+        account.createOAuth2Session(
+            "google",
+            "http://localhost:7656", // success redirect URL (your frontend)
+            "http://localhost:7656/login" // failure redirect URL
+        );
     };
 
     return (
         <div className="login-wrapper" style={{ backgroundImage: `url(${bgImg})` }}>
+            <Link to="/" className="back-home">
+                <FaArrowLeft /> Back to Home
+            </Link>
             <div className="login-card professional">
                 <div className="logo">🤖</div>
                 <h2>Sign Up</h2>
@@ -91,7 +105,7 @@ export default function Signup() {
 
                 <div className="divider">or</div>
 
-                <button className="google-btn" onClick={handleGoogleSignup}>
+                <button className="google-btn" onClick={handleGoogleLogin}>
                     <FcGoogle className="google-icon" />
                     <span>Continue with Google</span>
                 </button>

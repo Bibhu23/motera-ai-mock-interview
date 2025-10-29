@@ -116,7 +116,7 @@ const Home = () => {
             <div key={i} className="feature-card">
               <span className="icon">{f.icon}</span>
               <h3>{f.title}</h3>
-              <p>{f.text}</p>
+              <p style={{ color: "brown" }}>{f.text}</p>
             </div>
           ))}
         </div>

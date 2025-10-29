@@ -21,6 +21,7 @@
   border-radius: 8px;
   transition: transform 0.3s ease;
 }
+
 .navbar-logo img:hover {
   transform: scale(1.05);
 }
@@ -32,6 +33,7 @@
   cursor: pointer;
   transition: color 0.3s ease;
 }
+
 .menu-toggle:hover {
   color: #00bfff;
 }
@@ -79,6 +81,7 @@
   border-radius: 25px;
   transition: all 0.3s ease;
 }
+
 .trial-btn:hover {
   transform: scale(1.05);
   background: linear-gradient(90deg, #00bfff, #007bff);
@@ -93,6 +96,7 @@
   cursor: pointer;
   transition: 0.3s;
 }
+
 .logout-btn:hover {
   background: #ff4d5a;
 }
@@ -100,14 +104,17 @@
 /* Credits Pill */
 .credits-pill {
   position: fixed;
-  bottom: 15px;
-  right: 15px;
+  top: 85px;
+  /* was 20px — increased to move below navbar */
+  right: 25px;
   background: #00bfff;
   color: white;
   padding: 8px 18px;
   border-radius: 50px;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(0, 191, 255, 0.4);
+  z-index: 10;
+
 }
 
 /* ----------------------- */

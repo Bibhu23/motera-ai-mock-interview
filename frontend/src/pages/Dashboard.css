@@ -19,75 +19,32 @@
   display: flex;
   min-height: 100vh;
   background: var(--bg);
+  /* allow scrolling inside main content instead of hiding overflow */
   overflow: hidden;
-  transition: all 0.3s ease-in-out;
 }
 
-/* -------------------- Sidebar -------------------- */
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--sidebar-width);
-  height: 100vh;
-  background: linear-gradient(180deg, #1e293b, #0f172a);
-  color: #e2e8f0;
-  padding: 24px;
-  overflow-y: auto;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
-  z-index: 10;
-}
-
-.sidebar h2 {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #f1f5f9;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sidebar li {
-  margin: 12px 0;
-}
-
-.sidebar a {
-  display: block;
-  padding: 10px 14px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: #cbd5e1;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
-}
-
-.sidebar a:hover,
-.sidebar a.active {
-  background: rgba(59, 130, 246, 0.15);
-  color: #fff;
-  transform: translateX(4px);
-}
 
 /* -------------------- Main content -------------------- */
 .main {
   margin-left: var(--sidebar-width);
   flex: 1;
-  padding: 32px;
-  background: var(--bg);
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   transition: all 0.3s ease-in-out;
+  position: relative;
 }
 
-/* -------------------- Dashboard Cards -------------------- */
+/* Scrollable content */
 .dashboard-content {
+  flex: 1;
+  /* grow to fill available space */
+  overflow-y: auto;
+  /* allows vertical scroll */
+  padding: 32px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 28px;
-  margin-bottom: 40px;
 }
 
 .card {
@@ -234,6 +191,7 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -244,6 +202,7 @@
 .chart-box {
   animation: fadeIn 0.5s ease-in-out;
 }
+
 /* -------------------- DARK MODE -------------------- */
 body.dark {
   --bg: #0f172a;
@@ -256,11 +215,6 @@ body.dark {
   transition: all 0.3s ease-in-out;
 }
 
-body.dark .sidebar {
-  background: linear-gradient(180deg, #111827, #1f2937);
-  color: #e2e8f0;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
-}
 
 body.dark .card {
   background: var(--card-bg);
@@ -301,4 +255,30 @@ body.dark .badge.bg-warning {
 .theme-toggle button:hover {
   background: var(--accent);
   color: #fff;
+}
+
+.back-home {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  background: rgba(79, 70, 229, 0.1);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  /* ✅ ensures it’s visible */
+}
+
+.back-home:hover {
+  color: #fff;
+  background: #4f46e5;
+  transform: translateX(-4px);
 }

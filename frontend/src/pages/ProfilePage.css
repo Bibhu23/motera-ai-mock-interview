@@ -1,6 +1,5 @@
 .profile-page {
     display: flex;
-    flex-direction: row;
     min-height: 100vh;
     font-family: "Poppins", sans-serif;
     background: linear-gradient(135deg, #c1b6ff, #a0e7e5);
@@ -11,13 +10,12 @@
     flex-direction: column;
     flex: 1;
     padding: 20px 40px;
-
+    align-items: center;
 }
 
-.main {
-    background: linear-gradient(135deg, #c1b6ff, #a0e7e5);
-    border-radius: 12px;
-    padding: 20px 40px;
+/* The gradient background should be on the page or a central wrapper */
+.main>* {
+    max-width: 800px;
 }
 
 /* Header */
@@ -65,13 +63,14 @@
     margin-bottom: 30px;
 }
 
-/* Profile Details Box */
+/* Profile Details Box (Already centered with margin: 0 auto) */
 .profile-details-box {
     background: #fff;
     padding: 30px;
     border-radius: 15px;
-    max-width: 800px;
-    margin: 0 auto 30px auto;
+    /* max-width is now handled by .main > * */
+    margin: 0 0 30px 0;
+    /* Adjusted margin to rely on .main's centering */
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -82,40 +81,32 @@
 
 .form-group label {
     display: block;
-    /* ensures label takes full width */
     text-align: left;
-    /* left-align text */
     font-weight: 500;
     margin-bottom: 5px;
     color: #333;
 }
 
 /* Form Row */
-/* Horizontal rows for main fields */
 .form-row {
     display: flex;
     gap: 20px;
-    /* space between fields */
     flex-wrap: wrap;
-    /* wrap on small screens */
     margin-bottom: 15px;
 }
 
 .form-row .form-group {
     flex: 1;
-    /* each field takes equal space */
     display: flex;
     flex-direction: column;
 }
 
-/* Vertical fields (summary, skills, hobbies) remain standard */
 /* All input and textarea fields */
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 10px 12px;
     border: 1.5px solid #5c5cff;
-    /* visible border */
     border-radius: 8px;
     font-size: 0.95rem;
     transition: all 0.2s ease;
@@ -127,14 +118,6 @@
 .form-group textarea:focus {
     border-color: #3f3fff;
     box-shadow: 0 0 5px rgba(92, 92, 255, 0.3);
-}
-
-/* Horizontal rows (no extra changes needed, fields inherit border) */
-.form-row .form-group {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    gap: 5px;
 }
 
 /* Textarea resize disabled for consistency */
@@ -213,6 +196,37 @@
     flex-direction: column;
 }
 
+/* Selected Locations Tag styling */
+.selected-locations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.location-tag {
+    background: #e0e7ff;
+    color: #3f3fff;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.location-tag button {
+    background: none;
+    border: none;
+    color: #3f3fff;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0;
+    line-height: 1;
+}
+
+
 /* Save button */
 .btn-save {
     margin-top: 20px;
@@ -223,6 +237,12 @@
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
+    width: 100%;
+    /* Make save button full width of the box */
+}
+
+.btn-save:hover:not(:disabled) {
+    background-color: #3f3fff;
 }
 
 .btn-save:disabled {
@@ -233,6 +253,7 @@
 .message {
     margin-top: 10px;
     color: green;
+    text-align: center;
 }
 
 /* Responsive */
@@ -240,4 +261,36 @@
     .form-row {
         flex-direction: column;
     }
+
+    .main {
+        padding: 20px 15px;
+    }
+
+    .profile-details-box {
+        padding: 20px;
+    }
+}
+
+.back-home {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    background: rgba(79, 70, 229, 0.1);
+    border: 1px solid rgba(79, 70, 229, 0.3);
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.back-home:hover {
+    color: #fff;
+    background: #4f46e5;
+    transform: translateX(-4px);
 }

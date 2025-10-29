@@ -1,23 +1,18 @@
 import React, { useState, useEffect, useContext } from "react";
 import Sidebar from "../components/Sidebar";
-// import DashboardNavbar from "./DashboardNavbar";
 import ProgressBar from "../components/ProgressBar";
 import { AppContext } from "../context/Appcontext";
-import { uploadResume, saveProfile, getProfile } from "../services/profileService";
+import { saveProfile, getProfile } from "../services/profileService";
 import "./ProfilePage.css";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { fetchJobs } from "../services/jobService";
+import { Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 const ProfilePage = () => {
 
-    const [jobSuggestions, setJobSuggestions] = useState([]);
-    const [jobsLoading, setJobsLoading] = useState(false);
-
-
     const { login } = useContext(AppContext);
     const navigate = useNavigate();
-    //also upload resume here
 
     const [profile, setProfile] = useState({
         fullName: "",
@@ -46,9 +41,8 @@ const ProfilePage = () => {
         const fields = Object.values(profile);
         const filled = fields.filter(v => {
             if (Array.isArray(v)) return v.length > 0;   // arrays
-            //trim only the String
             if (typeof v === "string") return v.trim() !== ""; // strings
-            return v != null; // other values (like numbers)
+            return v != null; // other values
         });
         setCompletion(Math.round((filled.length / fields.length) * 100));
     }, [profile]);
@@ -59,36 +53,24 @@ const ProfilePage = () => {
             try {
                 const data = await getProfile();
                 if (data) {
-                    console.log(data);
-
-                    setProfile(data);
+                    // Ensure all fields are present, especially arrays, for safety
+                    setProfile({
+                        ...data,
+                        workHistory: data.workHistory || [],
+                        education: data.education || [],
+                        certifications: data.certifications || [],
+                        preferredLocations: data.preferredLocations || [],
+                        // resume might be a string path or null if it was uploaded previously
+                    });
                 }
             } catch (err) {
-                //for the first time it will execute
                 if (err.response && err.response.status === 404) {
-                    // First-time user, show empty form
-                    setProfile({
-                        fullName: "",
-                        email: "",
-                        phone: "",
-                        title: "",
-                        city: "",
-                        country: "",
-                        experience: "",
-                        summary: "",
-                        skills: "",
-                        hobbies: "",
-                        workHistory: [],
-                        education: [],
-                        resume: null,
-                        certifications: [],
-                    });
+                    // First-time user, use initial empty state
+                    setProfile(prev => ({ ...prev })); // Just keeping the initial state
                 } else {
-                    console.log(err);
-
+                    console.error("Error fetching profile:", err);
                 }
             }
-
         }
         fetchData();
     }, []);
@@ -97,24 +79,8 @@ const ProfilePage = () => {
     const handleFileUpload = async (e) => {
         const uploadedFile = e.target.files[0];
         if (!uploadedFile) return;
-
-        /*setLoading(true);
-        setMessage("Analyzing your resume...");
-        try {
-            const data = await uploadResume(uploadedFile);
-            setProfile(prev => ({ ...prev, ...data }));
-            setMessage("Resume analyzed successfully!");
-        } catch (err) {
-            setMessage("Failed to analyze resume. Try again.");
-        } finally {
-            setLoading(false);
-        }*/
-        setProfile({ ...profile, resume: e.target.files[0] })
+        setProfile({ ...profile, resume: uploadedFile });
     };
-    //handle certification upload
-    const handleCertificationUpload = (e) => {
-        setProfile({ ...profile, certifications: e.target.files[0] })
-    }
 
     // Handle input change
     const handleChange = (e) => {
@@ -124,11 +90,21 @@ const ProfilePage = () => {
 
     // Add item to array fields
     const handleAddItem = (field) => {
+        let newItem = {};
+        if (field === "workHistory") {
+            newItem = { jobTitle: "", company: "", startDate: "", endDate: "", description: "" };
+        } else if (field === "education") {
+            newItem = { institution: "", degree: "", fieldOfStudy: "", graduationYear: "", cgpa: "" };
+        } else if (field === "certifications") {
+            newItem = { name: "", organization: "", dateObtained: "" };
+        }
+
         setProfile(prev => ({
             ...prev,
-            [field]: [...prev[field], ""]
+            [field]: [...prev[field], newItem]
         }));
     };
+
     // Remove item from array fields
     const handleRemoveItem = (field, index) => {
         setProfile(prev => ({
@@ -137,7 +113,7 @@ const ProfilePage = () => {
         }));
     };
 
-    // Handle array item change
+    // Handle array item change (for work, education, certs)
     const handleArrayChange = (field, index, value) => {
         const updated = [...profile[field]];
         updated[index] = value;
@@ -150,35 +126,46 @@ const ProfilePage = () => {
             setLoading(true);
             await saveProfile(profile);
             setMessage("Profile saved successfully!");
-            navigate("/profile/view")
+            // Give a moment for the message to be seen before navigating
+            setTimeout(() => navigate("/profile/view"), 1000);
         } catch (err) {
             setMessage("Failed to save profile.");
+            console.error("Save profile error:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleFetchJobs = async () => {
-        if (!profile.skills || !(profile.preferredLocations && profile.preferredLocations.length > 0)) return;
-
-        setJobsLoading(true);
-        try {
-            const skillsArray = profile.skills.split(",").map(s => s.trim()).filter(s => s);
-            const jobs = await fetchJobs(skillsArray, profile.preferredLocations);
-            console.log("Fetched jobs:", jobs); // debug
-            setJobSuggestions(jobs || []);
-        } catch (err) {
-            console.error("Failed to fetch jobs:", err);
-        } finally {
-            setJobsLoading(false);
+    const handleLocationKeydown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const value = e.target.value.trim();
+            if (value && !(profile.preferredLocations || []).includes(value) && (profile.preferredLocations || []).length < 3) {
+                setProfile(prev => ({
+                    ...prev,
+                    preferredLocations: [...(prev.preferredLocations || []), value]
+                }));
+                e.target.value = "";
+            }
         }
     };
 
+    const handleRemoveLocation = (idx) => {
+        setProfile(prev => ({
+            ...prev,
+            preferredLocations: (prev.preferredLocations || []).filter((l, i) => i !== idx)
+        }));
+    };
+
+
     return (
         <div className="profile-page">
+            {/* Assuming Sidebar is a component external to this file */}
+            <Sidebar />
             <div className="main">
-
-                {/* <DashboardNavbar user={{ name: "Bibhu", avatar: "" }} /> */}
+                <Link to="/" className="back-home">
+                    <FaArrowLeft /> Back to Home
+                </Link>
 
                 {/* Header */}
                 <div className="profile-header">
@@ -198,7 +185,7 @@ const ProfilePage = () => {
                         style={{ display: "none" }}
                     />
                     <label htmlFor="resumeUpload" className="upload-label">
-                        {loading ? "Processing..." : "Click to upload or drag and drop your resume"}
+                        {profile.resume?.name ? `File selected: ${profile.resume.name}` : "Click to upload or drag and drop your resume"}
                         <br />
                         <small>PDF or DOCX (MAX. 5MB)</small>
                     </label>
@@ -271,6 +258,7 @@ const ProfilePage = () => {
                             <label>Years of Experience</label>
                             <input
                                 name="experience"
+                                type="number"
                                 value={profile.experience}
                                 onChange={handleChange}
                             />
@@ -303,32 +291,13 @@ const ProfilePage = () => {
                         <input
                             type="text"
                             placeholder="Type location and press Enter"
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    const value = e.target.value.trim();
-                                    if (value && !profile.preferredLocations.includes(value) && profile.preferredLocations.length < 3) {
-                                        setProfile(prev => ({
-                                            ...prev,
-                                            preferredLocations: [...prev.preferredLocations, value]
-                                        }));
-                                        e.target.value = "";
-                                    }
-                                }
-                            }}
+                            onKeyDown={handleLocationKeydown}
                         />
                         <div className="selected-locations">
                             {(profile.preferredLocations || []).map((loc, idx) => (
                                 <span key={idx} className="location-tag">
                                     {loc}
-                                    <button
-                                        onClick={() =>
-                                            setProfile(prev => ({
-                                                ...prev,
-                                                preferredLocations: (prev.preferredLocations || []).filter((l, i) => i !== idx)
-                                            }))
-                                        }
-                                    >
+                                    <button onClick={() => handleRemoveLocation(idx)}>
                                         x
                                     </button>
                                 </span>
@@ -353,7 +322,7 @@ const ProfilePage = () => {
                         {profile.workHistory.map((item, idx) => (
                             <div className="array-item" key={idx}>
                                 {/* Remove button for each entry */}
-                                <button className="remove-btn" onClick={() => handleRemoveItem("workHistory", idx)}>
+                                <button type="button" className="remove-btn" onClick={() => handleRemoveItem("workHistory", idx)}>
                                     <FaMinus />
                                 </button>
 
@@ -408,7 +377,7 @@ const ProfilePage = () => {
                         ))}
 
                         {/* Single Add button at bottom */}
-                        <button className="add-btn" onClick={() => handleAddItem("workHistory")}>
+                        <button type="button" className="add-btn" onClick={() => handleAddItem("workHistory")}>
                             <FaPlus /> Add Work History
                         </button>
                     </div>
@@ -421,7 +390,7 @@ const ProfilePage = () => {
                         {profile.education.map((item, idx) => (
                             <div className="array-item" key={idx}>
                                 {/* Remove button for each entry */}
-                                <button className="remove-btn" onClick={() => handleRemoveItem("education", idx)}>
+                                <button type="button" className="remove-btn" onClick={() => handleRemoveItem("education", idx)}>
                                     <FaMinus />
                                 </button>
 
@@ -474,7 +443,7 @@ const ProfilePage = () => {
                         ))}
 
                         {/* Single Add button at bottom */}
-                        <button className="add-btn" onClick={() => handleAddItem("education")}>
+                        <button type="button" className="add-btn" onClick={() => handleAddItem("education")}>
                             <FaPlus /> Add Education
                         </button>
                     </div>
@@ -485,7 +454,7 @@ const ProfilePage = () => {
                         {profile.certifications.map((item, idx) => (
                             <div className="array-item" key={idx}>
                                 {/* Show remove button for each entry */}
-                                <button className="remove-btn" onClick={() => handleRemoveItem("certifications", idx)}>
+                                <button type="button" className="remove-btn" onClick={() => handleRemoveItem("certifications", idx)}>
                                     <FaMinus />
                                 </button>
 
@@ -520,37 +489,19 @@ const ProfilePage = () => {
                         ))}
 
                         {/* Single Add button at bottom */}
-                        <button className="add-btn" onClick={() => handleAddItem("certifications")}>
+                        <button type="button" className="add-btn" onClick={() => handleAddItem("certifications")}>
                             <FaPlus /> Add Certification
                         </button>
                     </div>
 
-                    <button onClick={handleSave} disabled={loading} className="btn-save">
+                    <button type="button" onClick={handleSave} disabled={loading} className="btn-save">
                         {loading ? "Saving..." : "Save Profile"}
                     </button>
 
                     {message && <p className="message">{message}</p>}
 
                 </div>
-                <div className="job-suggestions">
-                    <h4>Job Suggestions</h4>
-                    <button onClick={handleFetchJobs} disabled={jobsLoading}>
-                        {jobsLoading ? "Fetching Jobs..." : "Get Jobs"}
-                    </button>
-
-                    {jobSuggestions.length > 0 && (
-                        <div className="jobs-list">
-                            {jobSuggestions.map(job => (
-                                <div key={job.id} className="job-card">
-                                    <h5>{job.title}</h5>
-                                    <p><strong>Company:</strong> {job.company.display_name}</p>
-                                    <p><strong>Location:</strong> {job.location.display_name}</p>
-                                    <a href={job.redirect_url} target="_blank" rel="noopener noreferrer">Apply Now</a>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                {/* Removed: Job Suggestions Section */}
             </div>
         </div>
     );

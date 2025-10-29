@@ -255,7 +255,9 @@
   overflow-wrap: break-word;
 }
 
-/* ---------- Job Suggestions ---------- */
+/* ------------------------------------------------ */
+/* ---------- Job Suggestions (Enhanced Styles) ---------- */
+/* ------------------------------------------------ */
 .job-list-container {
   position: relative;
   padding: 0 40px;
@@ -268,7 +270,8 @@
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  gap: 1.5rem;
+  gap: 1.8rem;
+  /* Increased gap for better separation */
   padding: 1rem 0;
 }
 
@@ -276,83 +279,122 @@
   display: none;
 }
 
+/* ------------------ Job Card Styling ------------------ */
 .job-list li {
-  min-width: 260px;
-  max-width: 300px;
+  min-width: 280px;
+  /* Slightly wider cards */
+  max-width: 320px;
   flex: 0 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  /* White background */
+  border-radius: 18px;
+  /* Slightly rounder corners */
+  padding: 1.8rem;
+  /* Increased padding */
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+  /* Softer, more prominent shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #f0f4ff;
+  /* Light, subtle border */
   animation: fadeIn 0.5s ease-out forwards;
   overflow-wrap: break-word;
+  display: flex;
+  /* Use flex for internal layout */
+  flex-direction: column;
 }
 
-/* ---------- Job Card ---------- */
+.job-list li:hover {
+  transform: translateY(-5px);
+  /* Lift significantly on hover */
+  box-shadow: 0 12px 35px rgba(80, 58, 219, 0.15);
+  /* Shadow hints at primary color */
+}
+
+
+/* ------------------ Job Card Elements ------------------ */
 .job-card-title {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  /* Larger, more impactful title */
+  font-weight: 700;
+  /* Bolder title */
   color: #2d3748;
-  margin-bottom: 0.8rem;
-  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
   overflow-wrap: break-word;
 }
 
 .job-card-company {
   color: #503adb;
+  /* Primary brand color for company name */
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 1rem;
 }
 
 .job-card-location {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   color: #64748b;
-  font-size: 0.9rem;
-  margin-bottom: 0.8rem;
+  /* Muted color for location */
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+  /* More space before tags */
+}
+
+/* Tags Container for Type and Category */
+.job-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  /* Space between tags and link */
+}
+
+.job-category,
+.job-type {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+  /* Prevent tags from breaking */
 }
 
 .job-category {
   background: #f0f4ff;
   color: #503adb;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  display: inline-block;
-  margin-bottom: 1rem;
 }
 
 .job-type {
   background: #e9faf0;
   color: #16a34a;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  display: inline-block;
-  margin-left: 0.5rem;
 }
 
 .job-card-link {
-  display: inline-block;
+  display: block;
+  /* Make the button full width of the card */
+  width: 100%;
+  text-align: center;
   background: #503adb;
   color: white;
-  padding: 0.8rem 1.5rem;
-  border-radius: 8px;
+  padding: 0.9rem 1.5rem;
+  border-radius: 10px;
+  /* Nicer button radius */
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  /* Bolder button text */
   font-size: 0.95rem;
   transition: all 0.2s ease;
-  margin-top: 1rem;
+  margin-top: auto;
+  /* Pushes the button to the bottom of the flex card */
 }
 
 .job-card-link:hover {
   background: #4331b9;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(80, 58, 219, 0.2);
+  box-shadow: 0 6px 15px rgba(80, 58, 219, 0.3);
 }
 
 /* ---------- Scroll Buttons ---------- */

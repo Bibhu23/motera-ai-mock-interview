@@ -6,6 +6,9 @@ import Sidebar from "../components/Sidebar";
 import { AppContext } from "../context/Appcontext";
 import { Navigate } from "react-router-dom";
 import "./Dashboard.css";
+import { Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+
 
 export default function Dashboard() {
     const { backend } = useContext(AppContext);
@@ -137,6 +140,10 @@ export default function Dashboard() {
         <div className="dashboard">
             <Sidebar />
             <div className="main">
+                <Link to="/" className="back-home">
+                    <FaArrowLeft style={{ marginRight: "6px" }} /> Back to Home
+                </Link>
+
                 {/* Theme Toggle */}
                 <div className="theme-toggle">
                     <button onClick={() => setDarkMode(!darkMode)}>

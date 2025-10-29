@@ -6,6 +6,8 @@
     background-size: cover;
     background-position: center;
     padding: 20px;
+    position: relative;
+
 }
 
 .login-card.professional {
@@ -152,4 +154,28 @@
     .google-btn {
         font-size: 13px;
     }
+}
+
+.back-home {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    background: rgba(79, 70, 229, 0.1);
+    border: 1px solid rgba(79, 70, 229, 0.3);
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.back-home:hover {
+    color: #fff;
+    background: #4f46e5;
+    transform: translateX(-4px);
 }

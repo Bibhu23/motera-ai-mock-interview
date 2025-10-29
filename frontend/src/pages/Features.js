@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Feature.css";
+import { FaArrowLeft } from "react-icons/fa";
 
 function Features() {
   const features = [
@@ -41,6 +42,10 @@ function Features() {
 
   return (
     <section className="features-wrapper" id="features">
+      <Link to="/" className="back-home">
+        <FaArrowLeft /> Back to Home
+      </Link>
+
       {/* ========== Platform Features ========== */}
       <div className="features-section text-center fade-up">
         <div className="section-label">⚡ Platform Features</div>

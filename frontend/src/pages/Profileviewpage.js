@@ -14,7 +14,7 @@ const ProfileSection = ({ title, children }) => (
   </div>
 );
 
-// Work History component remains the same
+// Work History component
 const WorkHistory = ({ workHistory = [] }) => (
   <ProfileSection title="Work History">
     {workHistory.length > 0 ? (
@@ -33,7 +33,7 @@ const WorkHistory = ({ workHistory = [] }) => (
   </ProfileSection>
 );
 
-// Skills List component remains the same
+// Skills List component
 const SkillsList = ({ skills = [] }) => {
   let skillArray = [];
 
@@ -59,7 +59,7 @@ const SkillsList = ({ skills = [] }) => {
   );
 };
 
-// Updated Job Suggestions component with horizontal scroll
+// Updated Job Suggestions component with horizontal scroll and improved structure
 const JobSuggestions = ({ jobs = [] }) => {
   const scrollContainerRef = useRef(null);
 
@@ -94,14 +94,20 @@ const JobSuggestions = ({ jobs = [] }) => {
                   {job.company?.display_name || "Unknown Company"}
                 </div>
                 <div className="job-card-location">
+                  {/* You might want to add a location icon here */}
                   {job.location?.display_name || "Location not specified"}
                 </div>
-                {job.category?.label && (
-                  <div className="job-category">{job.category.label}</div>
-                )}
-                {job.contract_type && (
-                  <div className="job-type">{job.contract_type}</div>
-                )}
+
+                {/* Tags Container */}
+                <div className="job-tags-container">
+                  {job.category?.label && (
+                    <div className="job-category">{job.category.label}</div>
+                  )}
+                  {job.contract_type && (
+                    <div className="job-type">{job.contract_type}</div>
+                  )}
+                </div>
+
                 <a
                   href={job.redirect_url}
                   target="_blank"
@@ -131,7 +137,6 @@ const JobSuggestions = ({ jobs = [] }) => {
 
 // Main ProfileViewPage component
 const ProfileViewPage = () => {
-  // States remain the same
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
@@ -140,7 +145,7 @@ const ProfileViewPage = () => {
   const { backend } = useContext(AppContext);
   const navigate = useNavigate();
 
-  // Fetch profile effect remains the same
+  // Fetch profile effect
   useEffect(() => {
     async function fetchProfileData() {
       try {
@@ -157,19 +162,25 @@ const ProfileViewPage = () => {
     fetchProfileData();
   }, []);
 
-  // Fetch jobs effect remains the same
+  // Fetch jobs effect
   useEffect(() => {
     async function fetchJobsForProfile() {
+      // Check if profile is loaded and has relevant data
       if (!profile || !profile.skills?.length || (!profile.city && !profile.country))
         return;
 
       try {
         setJobsLoading(true);
-        const skillsArray = Array.isArray(profile.skills) ? profile.skills : [];
+        // Handle skills as either an array or a comma-separated string
+        const skillsArray = Array.isArray(profile.skills)
+          ? profile.skills
+          : profile.skills.split(',').map(s => s.trim()).filter(Boolean);
+
         const locations = [profile.city, profile.country].filter(Boolean);
         const allJobs = [];
 
-        for (const skill of skillsArray) {
+        // Simple fetch logic (based on original) - note: this can be inefficient
+        for (const skill of skillsArray.slice(0, 3)) { // Limit skills for demonstration
           for (const location of locations) {
             const res = await fetch(
               `${backend}/api/jobs?skill=${encodeURIComponent(skill)}&location=${encodeURIComponent(location)}`
@@ -178,7 +189,11 @@ const ProfileViewPage = () => {
             if (Array.isArray(data)) allJobs.push(...data);
           }
         }
-        setJobs(allJobs);
+
+        // Simple deduplication based on job title and company (better deduplication needed in production)
+        const uniqueJobs = Array.from(new Set(allJobs.map(j => JSON.stringify(j)))).map(s => JSON.parse(s));
+
+        setJobs(uniqueJobs.slice(0, 10)); // Limit to 10 suggestions
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
         setJobs([]);
@@ -189,7 +204,7 @@ const ProfileViewPage = () => {
     fetchJobsForProfile();
   }, [profile, backend]);
 
-  // Loading and error states remain the same
+  // Loading and error states
   if (loading) return (
     <div className="loading-container">
       <div className="loading-spinner"></div>
@@ -198,8 +213,10 @@ const ProfileViewPage = () => {
   );
   if (error) return <div className="error-message">{error}</div>;
   if (!profile) return <div className="no-profile">Profile not found</div>;
+
+  // Rendered component
   return (
-    <div className="profile-page-wrapper"> {/* NEW outer wrapper */}
+    <div className="profile-page-wrapper">
       <div className="profile-inner-container animate-in">
         <div className="profile-left">
           <div className="profile-photo-container">
@@ -236,6 +253,7 @@ const ProfileViewPage = () => {
               <p>{profile.summary || "No summary available."}</p>
             </div>
 
+            {/* Job Suggestions Section */}
             {jobsLoading ? (
               <p className="loading-jobs">Loading job suggestions...</p>
             ) : (

@@ -1,14 +1,14 @@
 import React, { useContext, useState } from "react";
-import Gpi from "../Gpi";
 import { AppContext } from "../context/Appcontext";
-import "./Login.css"; // Import the CSS file
+import "./Login.css";
 import bgImg from "../assets/moterabac.jfif";
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
+import { FaArrowLeft } from "react-icons/fa";
+import { account } from "../appwrite";
 
 export default function Login() {
-    const { backend } = React.useContext(AppContext)
     const { setUser, setLogin } = useContext(AppContext);
     const navigate = useNavigate();
     const [loginForm, setLoginForm] = useState({
@@ -23,9 +23,7 @@ export default function Login() {
             return;
         }
         try {
-            const res = await axios.post(`${backend}/user/api/v1/login`, loginForm, {
-                withCredentials: true,
-            });
+            const res = await axios.post("http://localhost:7656/user/api/v1/login", loginForm, { withCredentials: true });
 
             if (res.data && res.data.user) {
                 setUser(res.data.user);
@@ -44,14 +42,19 @@ export default function Login() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${backend}`;
+        account.createOAuth2Session(
+            "google",
+            "http://localhost:3000/",     // ✅ success redirect → home page
+            // "http://localhost:3000/login" // ✅ failure redirect → login page
+        );
     };
 
+
     return (
-        <div
-            className="login-wrapper"
-            style={{ backgroundImage: `url(${bgImg})` }}
-        >
+        <div className="login-wrapper" style={{ backgroundImage: `url(${bgImg})` }}>
+            <Link to="/" className="back-home">
+                <FaArrowLeft /> Back to Home
+            </Link>
             <div className="login-card">
                 <div className="logo">🤖</div>
                 <h2>Motera AI Mock Interview</h2>
@@ -107,4 +110,6 @@ export default function Login() {
             </div>
         </div>
     );
+
+
 }
