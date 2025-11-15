@@ -63,9 +63,7 @@ const Home = () => {
           </p>
           <div className="cta-buttons">
             <button onClick={() => navigate("/round1")}>Start Mock Interview</button>
-            <button className="secondary" onClick={() => window.scrollTo({ top: 700, behavior: "smooth" })}>
-              Learn More
-            </button>
+            <button onClick={() => navigate("/dashboard")}>Dashboard</button>
           </div>
         </motion.div>
 
@@ -116,7 +114,7 @@ const Home = () => {
             <div key={i} className="feature-card">
               <span className="icon">{f.icon}</span>
               <h3>{f.title}</h3>
-              <p style={{ color: "brown" }}>{f.text}</p>
+              <p>{f.text}</p>
             </div>
           ))}
         </div>

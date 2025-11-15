@@ -21,6 +21,8 @@ import authRoutes from "./route/authRoutes.js";
 import jobRoutes from "./route/jobRoutes.js";
 import round3Routes from "./route/round3.route.js";
 import hrRoute from "./route/hr.route.js";
+import speakRoutes from './route/speekRoute.js'
+
 
 // Socket handler
 import initInterviewSocket from "./handler/interViewSocket.js";
@@ -74,6 +76,7 @@ app.use("/auth", authRoutes); // Google login routes
 app.use("/user/api/v1", round3Routes);
 app.use("/user/api/v1", hrRoute);
 app.use("/api", jobRoutes);
+app.use("/api/speak", speakRoutes);
 
 // ✅ Start server
 const startServer = async () => {

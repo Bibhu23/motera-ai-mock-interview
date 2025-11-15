@@ -1,6 +1,7 @@
 import './App.css';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Signup from './components/Signup';
+import Landing from './pages/Landing';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
@@ -43,7 +44,8 @@ function App() {
 
       <div className={!hideLayout ? "main-content" : "blur-background"}>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/features" element={<Features />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
