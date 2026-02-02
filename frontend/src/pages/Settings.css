@@ -1,0 +1,107 @@
+/* ================= SETTINGS PAGE ================= */
+
+.settings-page {
+    max-width: 1100px;
+}
+
+/* Card polish */
+.settings-card {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.settings-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
+}
+
+/* Card header */
+.settings-card .card-header {
+    background: transparent;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 16px 22px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Card body */
+.settings-card .card-body {
+    padding: 22px;
+}
+
+/* Form labels */
+.settings-card label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Inputs */
+.settings-card .form-control,
+.settings-card .form-select {
+    border-radius: 10px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+}
+
+.settings-card .form-control:focus,
+.settings-card .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Save button */
+.settings-page button.btn-primary {
+    padding: 10px 26px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* ================= DARK MODE ================= */
+
+body.dark .settings-page {
+    color: #e5e7eb;
+}
+
+body.dark .settings-card {
+    background: #111827;
+    box-shadow: none;
+}
+
+body.dark .settings-card .card-header {
+    border-bottom: 1px solid #1f2937;
+}
+
+body.dark .settings-card label {
+    color: #cbd5f5;
+}
+
+body.dark .form-control,
+body.dark .form-select {
+    background: #0f172a;
+    color: #e5e7eb;
+    border-color: #1f2937;
+}
+
+body.dark .form-control::placeholder {
+    color: #94a3b8;
+}
+
+body.dark .btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+    .settings-page {
+        padding: 10px;
+    }
+
+    .settings-card .card-body {
+        padding: 18px;
+    }
+}

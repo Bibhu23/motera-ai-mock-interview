@@ -20,6 +20,7 @@ import HrInterviewPage from './pages/Hrround';
 import ProfileViewPage from './pages/Profileviewpage';
 import HrResultPage from "./pages/HrResultPage";
 import LiveVideoResultPage from './pages/LiveVideoResultPage'
+import Settings from './pages/Settings';
 import { AppContext } from './context/Appcontext';
 import { useContext } from 'react';
 import { useEffect } from 'react';
@@ -62,6 +63,8 @@ function App() {
           <Route path="/profile/view" element={<ProfileViewPage />} />
           <Route path="/hr-result" element={<HrResultPage />} />
           <Route path='/technical-result' element={<LiveVideoResultPage />} />
+          <Route path="/settings" element={<Settings />} />
+
         </Routes>
       </div>
 

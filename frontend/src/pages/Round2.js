@@ -13,7 +13,7 @@ const Round2 = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState({});
     const [questions, setQuestions] = useState([]);
-    const [questionCount, setQuestionCount] = useState(15);
+    const [questionCount, setQuestionCount] = useState(10);
     const [loading, setLoading] = useState(true);
     const [questionType, setQuestionType] = useState("mcq"); // mcq or technical
     const navigate = useNavigate();
@@ -143,7 +143,9 @@ const Round2 = () => {
                         {/* Question settings */}
                         <div className="mb-3 row">
                             <div className="col-md-6">
-                                <label>Question Type:</label>
+                                <label className="form-label fw-semibold">
+                                    Question Type:
+                                </label>
                                 <select
                                     className="form-select"
                                     value={questionType}
@@ -153,19 +155,19 @@ const Round2 = () => {
                                     <option value="technical">Technical Questions</option>
                                 </select>
                             </div>
+
                             <div className="col-md-6">
-                                <label>Number of Questions:</label>
-                                <select
-                                    className="form-select"
-                                    value={questionCount}
-                                    onChange={(e) => setQuestionCount(parseInt(e.target.value))}
-                                >
-                                   
-                                    <option value={15}>15 Questions</option>
-                                </select>
+                                <label className="form-label fw-semibold">
+                                    Number of Questions:
+                                </label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value="10 Questions"
+                                    disabled
+                                />
                             </div>
                         </div>
-
                         {/* Question display */}
                         {questions.length > 0 && (
                             <div className="question-area">
@@ -227,46 +229,81 @@ const Round2 = () => {
                     </div>
                 </div>
 
-                {/* Right side: progress & navigation */}
-                <div className="col-md-4">
-                    <div className="card shadow-sm p-3 mb-3">
-                        <h6>Round 2 Progress</h6>
-                        <p className="small text-muted">Questions: {TOTAL_QUESTIONS}</p>
-                        <p className="small text-success">Answered: {Object.keys(answers).length}</p>
-                        <p className="small text-danger">Not Answered: {TOTAL_QUESTIONS - Object.keys(answers).length}</p>
-                        <p className="small text-muted">Not Visited: {TOTAL_QUESTIONS - (currentQuestion + 1)}</p>
-                        <hr />
-                        <p className="small text-info">
-                            <strong>Required Score:</strong> {Math.ceil(questionCount * 0.6)}/{TOTAL_QUESTIONS} (60%)
-                        </p>
-                        <p className="small text-warning">
-                            <strong>Current Score:</strong> {score}/{TOTAL_QUESTIONS}
-                        </p>
-                    </div>
+                {/* Right side: Progress & Navigation */}
+                <div className="col-12 col-md-4 mt-4 mt-md-0">
+                    <div className="card shadow-sm h-100 sticky-md-top">
+                        <div className="card-body">
 
-                    <div className="card shadow-sm p-3">
-                        <h6>Jump to Question</h6>
-                        <div className="d-flex flex-wrap gap-2 mt-2">
-                            {Array.from({ length: TOTAL_QUESTIONS }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setCurrentQuestion(i)}
-                                    className={`btn rounded-circle ${answers[i] ? "btn-success" : i === currentQuestion ? "btn-primary" : "btn-outline-danger"
-                                        }`}
-                                    style={{ width: "40px", height: "40px" }}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                            {/* Progress Section */}
+                            <h6 className="fw-bold text-center mb-3">Round 2 Progress</h6>
+
+                            <div className="small">
+                                <div className="d-flex justify-content-between">
+                                    <span className="text-muted">Questions</span>
+                                    <span className="fw-semibold">{TOTAL_QUESTIONS}</span>
+                                </div>
+
+                                <div className="d-flex justify-content-between text-success">
+                                    <span>Answered</span>
+                                    <span>{Object.keys(answers).length}</span>
+                                </div>
+
+                                <div className="d-flex justify-content-between text-danger">
+                                    <span>Not Answered</span>
+                                    <span>{TOTAL_QUESTIONS - Object.keys(answers).length}</span>
+                                </div>
+
+                                <div className="d-flex justify-content-between text-muted">
+                                    <span>Not Visited</span>
+                                    <span>{TOTAL_QUESTIONS - (currentQuestion + 1)}</span>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <div className="small text-center">
+                                <p className="mb-1 text-info fw-semibold">
+                                    Required Score: 6 / {TOTAL_QUESTIONS} (60%)
+                                </p>
+                                <p className="mb-0 text-warning fw-semibold">
+                                    Current Score: {score} / {TOTAL_QUESTIONS}
+                                </p>
+                            </div>
+
+                            <hr />
+
+                            {/* Jump to Question */}
+                            <h6 className="fw-bold text-center mb-3">Jump to Question</h6>
+
+                            <div className="d-flex flex-wrap justify-content-center gap-2">
+                                {Array.from({ length: TOTAL_QUESTIONS }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentQuestion(i)}
+                                        className={`btn rounded-circle ${answers[i]
+                                            ? "btn-success"
+                                            : i === currentQuestion
+                                                ? "btn-primary"
+                                                : "btn-outline-secondary"
+                                            }`}
+                                        style={{ width: "48px", height: "48px" }}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                className="btn btn-primary w-100 mt-4 fw-semibold"
+                                onClick={() => handleExamComplete(score)}
+                            >
+                                Submit Test
+                            </button>
+
                         </div>
-                        <button
-                            className="btn btn-primary w-100 mt-3"
-                            onClick={() => handleExamComplete(score)}
-                        >
-                            Submit Test
-                        </button>
                     </div>
                 </div>
+
             </div>
         </div>
     );

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/Appcontext";
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-// Section wrapper
+// Wrapper for sections
 const ProfileSection = ({ title, children }) => (
   <div className="profile-section">
     <h3>{title}</h3>
@@ -20,11 +20,9 @@ const WorkHistory = ({ workHistory = [] }) => (
     {workHistory.length > 0 ? (
       workHistory.map((work, idx) => (
         <div key={idx} className="work-item fade-in">
-          <strong>{work.company}</strong>
-          <p>{work.jobTitle}</p>
-          <p>
-            {work.startDate} - {work.endDate || "Present"}
-          </p>
+          <strong>{work.company || "Company not specified"}</strong>
+          <p>{work.jobTitle || "Job title not specified"}</p>
+          <p>{work.startDate || "Start Date"} - {work.endDate || "Present"}</p>
         </div>
       ))
     ) : (
@@ -33,23 +31,19 @@ const WorkHistory = ({ workHistory = [] }) => (
   </ProfileSection>
 );
 
-// Skills List component
+// Skills component
 const SkillsList = ({ skills = [] }) => {
   let skillArray = [];
-
   if (Array.isArray(skills)) skillArray = skills;
   else if (typeof skills === "string") {
-    skillArray = skills.split(",").map((s) => s.trim()).filter(Boolean);
+    skillArray = skills.split(",").map(s => s.trim()).filter(Boolean);
   }
-
   return (
     <ProfileSection title="Skills">
       {skillArray.length > 0 ? (
         <ul className="skills-list">
           {skillArray.map((skill, i) => (
-            <li key={i} className="skill-tag fade-in">
-              {skill}
-            </li>
+            <li key={i} className="skill-tag fade-in">{skill}</li>
           ))}
         </ul>
       ) : (
@@ -59,16 +53,14 @@ const SkillsList = ({ skills = [] }) => {
   );
 };
 
-// Updated Job Suggestions component with horizontal scroll and improved structure
+// Job Suggestions with horizontal scroll
 const JobSuggestions = ({ jobs = [] }) => {
   const scrollContainerRef = useRef(null);
-
   const scroll = (direction) => {
     const container = scrollContainerRef.current;
-    const scrollAmount = 350;
     if (container) {
       container.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        left: direction === 'left' ? -350 : 350,
         behavior: 'smooth'
       });
     }
@@ -78,53 +70,28 @@ const JobSuggestions = ({ jobs = [] }) => {
     <ProfileSection title="Job Suggestions">
       {jobs.length > 0 ? (
         <div className="job-list-container">
-          <button
-            className="scroll-button left"
-            onClick={() => scroll('left')}
-            aria-label="Scroll left"
-          >
+          <button className="scroll-button left" onClick={() => scroll('left')} aria-label="Scroll left">
             <FaChevronLeft />
           </button>
 
           <ul className="job-list" ref={scrollContainerRef}>
             {jobs.map((job, idx) => (
               <li key={job.id || idx} className="fade-in">
-                <h4 className="job-card-title">{job.title}</h4>
-                <div className="job-card-company">
-                  {job.company?.display_name || "Unknown Company"}
-                </div>
-                <div className="job-card-location">
-                  {/* You might want to add a location icon here */}
-                  {job.location?.display_name || "Location not specified"}
-                </div>
-
-                {/* Tags Container */}
+                <h4 className="job-card-title">{job.title || "No Title"}</h4>
+                <div className="job-card-company">{job.company?.display_name || "Unknown Company"}</div>
+                <div className="job-card-location">{job.location?.display_name || "Location not specified"}</div>
                 <div className="job-tags-container">
-                  {job.category?.label && (
-                    <div className="job-category">{job.category.label}</div>
-                  )}
-                  {job.contract_type && (
-                    <div className="job-type">{job.contract_type}</div>
-                  )}
+                  {job.category?.label && <div className="job-category">{job.category.label}</div>}
+                  {job.contract_type && <div className="job-type">{job.contract_type}</div>}
                 </div>
-
-                <a
-                  href={job.redirect_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="job-card-link"
-                >
+                <a href={job.redirect_url || "#"} target="_blank" rel="noopener noreferrer" className="job-card-link">
                   View Job
                 </a>
               </li>
             ))}
           </ul>
 
-          <button
-            className="scroll-button right"
-            onClick={() => scroll('right')}
-            aria-label="Scroll right"
-          >
+          <button className="scroll-button right" onClick={() => scroll('right')} aria-label="Scroll right">
             <FaChevronRight />
           </button>
         </div>
@@ -135,9 +102,26 @@ const JobSuggestions = ({ jobs = [] }) => {
   );
 };
 
-// Main ProfileViewPage component
+// Main ProfileViewPage
 const ProfileViewPage = () => {
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    title: "",
+    city: "",
+    country: "",
+    experience: "",
+    summary: "",
+    skills: "",
+    hobbies: "",
+    workHistory: [],
+    education: [],
+    certifications: [],
+    preferredLocations: [],
+    photo: null
+  });
+
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(false);
@@ -145,16 +129,17 @@ const ProfileViewPage = () => {
   const { backend } = useContext(AppContext);
   const navigate = useNavigate();
 
-  // Fetch profile effect
+  // Fetch profile
   useEffect(() => {
     async function fetchProfileData() {
       try {
         setLoading(true);
         const data = await getProfile();
-        setProfile(data);
+        console.log("Fetched profile:", data);
+        if (data) setProfile(prev => ({ ...prev, ...data }));
       } catch (err) {
         console.error("Profile load error:", err);
-        setError("Failed to load profile. Please try again later.");
+        setError("Failed to load profile.");
       } finally {
         setLoading(false);
       }
@@ -162,59 +147,51 @@ const ProfileViewPage = () => {
     fetchProfileData();
   }, []);
 
-  // Fetch jobs effect
+  // Fetch jobs
   useEffect(() => {
-    async function fetchJobsForProfile() {
-      // Check if profile is loaded and has relevant data
-      if (!profile || !profile.skills?.length || (!profile.city && !profile.country))
-        return;
+    async function fetchJobs() {
+      if (!profile.skills || (!profile.city && !profile.country)) return;
 
       try {
         setJobsLoading(true);
-        // Handle skills as either an array or a comma-separated string
-        const skillsArray = Array.isArray(profile.skills)
-          ? profile.skills
-          : profile.skills.split(',').map(s => s.trim()).filter(Boolean);
+        const skillsArray = typeof profile.skills === "string"
+          ? profile.skills.split(",").map(s => s.trim()).filter(Boolean)
+          : profile.skills;
 
         const locations = [profile.city, profile.country].filter(Boolean);
         const allJobs = [];
 
-        // Simple fetch logic (based on original) - note: this can be inefficient
-        for (const skill of skillsArray.slice(0, 3)) { // Limit skills for demonstration
+        for (const skill of skillsArray.slice(0, 3)) {
           for (const location of locations) {
-            const res = await fetch(
-              `${backend}/api/jobs?skill=${encodeURIComponent(skill)}&location=${encodeURIComponent(location)}`
-            );
-            const data = await res.json();
-            if (Array.isArray(data)) allJobs.push(...data);
+            try {
+              const res = await fetch(`${backend}/api/jobs?skill=${encodeURIComponent(skill)}&location=${encodeURIComponent(location)}`);
+              const data = await res.json();
+              if (Array.isArray(data)) allJobs.push(...data);
+            } catch (err) {
+              console.error("Jobs fetch error:", err);
+            }
           }
         }
 
-        // Simple deduplication based on job title and company (better deduplication needed in production)
+        // Deduplicate jobs
         const uniqueJobs = Array.from(new Set(allJobs.map(j => JSON.stringify(j)))).map(s => JSON.parse(s));
-
-        setJobs(uniqueJobs.slice(0, 10)); // Limit to 10 suggestions
-      } catch (err) {
-        console.error("Failed to fetch jobs:", err);
-        setJobs([]);
+        setJobs(uniqueJobs.slice(0, 10));
       } finally {
         setJobsLoading(false);
       }
     }
-    fetchJobsForProfile();
+    fetchJobs();
   }, [profile, backend]);
 
-  // Loading and error states
   if (loading) return (
     <div className="loading-container">
       <div className="loading-spinner"></div>
       <p>Loading profile...</p>
     </div>
   );
-  if (error) return <div className="error-message">{error}</div>;
-  if (!profile) return <div className="no-profile">Profile not found</div>;
 
-  // Rendered component
+  if (error) return <div className="error-message">{error}</div>;
+
   return (
     <div className="profile-page-wrapper">
       <div className="profile-inner-container animate-in">
@@ -234,7 +211,7 @@ const ProfileViewPage = () => {
         <div className="profile-right-wrapper">
           <div className="profile-right">
             <header className="profile-header">
-              <h2>{profile.fullName}</h2>
+              <h2>{profile.fullName || "No Name"}</h2>
               <p className="title">{profile.title || "No title specified"}</p>
               <p className="location">
                 {profile.city && profile.country
@@ -253,7 +230,6 @@ const ProfileViewPage = () => {
               <p>{profile.summary || "No summary available."}</p>
             </div>
 
-            {/* Job Suggestions Section */}
             {jobsLoading ? (
               <p className="loading-jobs">Loading job suggestions...</p>
             ) : (

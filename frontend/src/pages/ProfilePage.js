@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../pages/Sidebar";
 import ProgressBar from "../components/ProgressBar";
 import { AppContext } from "../context/Appcontext";
 import { saveProfile, getProfile } from "../services/profileService";
 import "./ProfilePage.css";
 import { FaPlus, FaMinus } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 
 const ProfilePage = () => {
-
     const { login } = useContext(AppContext);
     const navigate = useNavigate();
 
@@ -29,121 +27,104 @@ const ProfilePage = () => {
         education: [],
         resume: null,
         certifications: [],
-        preferredLocations: []
+        preferredLocations: [],
     });
 
     const [completion, setCompletion] = useState(0);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
-    // Calculate profile completion 
+    // Calculate profile completion
     useEffect(() => {
         const fields = Object.values(profile);
-        const filled = fields.filter(v => {
-            if (Array.isArray(v)) return v.length > 0;   // arrays
-            if (typeof v === "string") return v.trim() !== ""; // strings
-            return v != null; // other values
+        const filled = fields.filter((v) => {
+            if (Array.isArray(v)) return v.length > 0;
+            if (typeof v === "string") return v.trim() !== "";
+            return v != null;
         });
         setCompletion(Math.round((filled.length / fields.length) * 100));
     }, [profile]);
 
     // Fetch profile on mount
     useEffect(() => {
-        async function fetchData() {
+        const fetchData = async () => {
             try {
                 const data = await getProfile();
-                if (data) {
-                    // Ensure all fields are present, especially arrays, for safety
+                if (data?.profile) {
                     setProfile({
-                        ...data,
-                        workHistory: data.workHistory || [],
-                        education: data.education || [],
-                        certifications: data.certifications || [],
-                        preferredLocations: data.preferredLocations || [],
-                        // resume might be a string path or null if it was uploaded previously
+                        ...data.profile,
+                        workHistory: data.profile.workHistory || [],
+                        education: data.profile.education || [],
+                        certifications: data.profile.certifications || [],
+                        preferredLocations: data.profile.preferredLocations || [],
+                        // resume is a file path string from backend
                     });
                 }
             } catch (err) {
-                if (err.response && err.response.status === 404) {
-                    // First-time user, use initial empty state
-                    setProfile(prev => ({ ...prev })); // Just keeping the initial state
+                if (err.response?.status === 404) {
+                    setProfile((prev) => ({ ...prev }));
                 } else {
                     console.error("Error fetching profile:", err);
                 }
             }
-        }
+        };
         fetchData();
     }, []);
 
-    // Handle resume upload
-    const handleFileUpload = async (e) => {
-        const uploadedFile = e.target.files[0];
-        if (!uploadedFile) return;
-        setProfile({ ...profile, resume: uploadedFile });
-    };
-
-    // Handle input change
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setProfile({ ...profile, [name]: value });
+        setProfile((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Add item to array fields
-    const handleAddItem = (field) => {
-        let newItem = {};
-        if (field === "workHistory") {
-            newItem = { jobTitle: "", company: "", startDate: "", endDate: "", description: "" };
-        } else if (field === "education") {
-            newItem = { institution: "", degree: "", fieldOfStudy: "", graduationYear: "", cgpa: "" };
+    // Handle file upload
+    const handleFileUpload = (e, field) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (field === "resume") {
+            setProfile((prev) => ({ ...prev, resume: file }));
         } else if (field === "certifications") {
-            newItem = { name: "", organization: "", dateObtained: "" };
+            setProfile((prev) => ({
+                ...prev,
+                certifications: [...prev.certifications, file],
+            }));
         }
-
-        setProfile(prev => ({
-            ...prev,
-            [field]: [...prev[field], newItem]
-        }));
     };
 
-    // Remove item from array fields
+    // Add/Remove items for arrays
+    const handleAddItem = (field) => {
+        const newItem = field === "workHistory"
+            ? { jobTitle: "", company: "", startDate: "", endDate: "", description: "" }
+            : field === "education"
+                ? { institution: "", degree: "", fieldOfStudy: "", graduationYear: "", cgpa: "" }
+                : { name: "", organization: "", dateObtained: "" };
+
+        setProfile((prev) => ({ ...prev, [field]: [...prev[field], newItem] }));
+    };
+
     const handleRemoveItem = (field, index) => {
-        setProfile(prev => ({
-            ...prev,
-            [field]: prev[field].filter((_, i) => i !== index)
-        }));
+        setProfile((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
     };
 
-    // Handle array item change (for work, education, certs)
     const handleArrayChange = (field, index, value) => {
         const updated = [...profile[field]];
         updated[index] = value;
-        setProfile(prev => ({ ...prev, [field]: updated }));
+        setProfile((prev) => ({ ...prev, [field]: updated }));
     };
 
-    // Save profile
-    const handleSave = async () => {
-        try {
-            setLoading(true);
-            await saveProfile(profile);
-            setMessage("Profile saved successfully!");
-            // Give a moment for the message to be seen before navigating
-            setTimeout(() => navigate("/profile/view"), 1000);
-        } catch (err) {
-            setMessage("Failed to save profile.");
-            console.error("Save profile error:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Handle preferred locations
     const handleLocationKeydown = (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
             const value = e.target.value.trim();
-            if (value && !(profile.preferredLocations || []).includes(value) && (profile.preferredLocations || []).length < 3) {
-                setProfile(prev => ({
+            if (
+                value &&
+                !profile.preferredLocations.includes(value) &&
+                profile.preferredLocations.length < 3
+            ) {
+                setProfile((prev) => ({
                     ...prev,
-                    preferredLocations: [...(prev.preferredLocations || []), value]
+                    preferredLocations: [...prev.preferredLocations, value],
                 }));
                 e.target.value = "";
             }
@@ -151,38 +132,62 @@ const ProfilePage = () => {
     };
 
     const handleRemoveLocation = (idx) => {
-        setProfile(prev => ({
+        setProfile((prev) => ({
             ...prev,
-            preferredLocations: (prev.preferredLocations || []).filter((l, i) => i !== idx)
+            preferredLocations: prev.preferredLocations.filter((_, i) => i !== idx),
         }));
     };
 
+    // Save profile with FormData
+    const handleSave = async () => {
+        try {
+            setLoading(true);
+            const formData = new FormData();
+
+            Object.keys(profile).forEach((key) => {
+                if (key === "resume" && profile.resume) {
+                    formData.append("resume", profile.resume);
+                } else if (["workHistory", "education", "certifications"].includes(key)) {
+                    formData.append(key, JSON.stringify(profile[key]));
+                } else if (Array.isArray(profile[key])) {
+                    formData.append(key, JSON.stringify(profile[key]));
+                } else {
+                    formData.append(key, profile[key] || "");
+                }
+            });
+
+            await saveProfile(formData); // send FormData
+
+            setMessage("Profile saved successfully!");
+            setTimeout(() => navigate("/profile/view"), 1000);
+        } catch (err) {
+            console.error("Save profile error:", err);
+            setMessage("Failed to save profile.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="profile-page">
-            {/* Assuming Sidebar is a component external to this file */}
             <Sidebar />
             <div className="main">
                 <Link to="/" className="back-home">
                     <FaArrowLeft /> Back to Home
                 </Link>
 
-                {/* Header */}
                 <div className="profile-header">
                     <h2>Complete Your Profile</h2>
-                    <p className="text-muted">
-                        A complete profile helps our AI understand you better.
-                    </p>
+                    <p className="text-muted">A complete profile helps our AI understand you better.</p>
                 </div>
 
-                {/* Upload Section */}
                 <div className="upload-box">
                     <input
                         type="file"
                         accept=".pdf,.doc,.docx"
-                        onChange={handleFileUpload}
                         id="resumeUpload"
                         style={{ display: "none" }}
+                        onChange={(e) => handleFileUpload(e, "resume")}
                     />
                     <label htmlFor="resumeUpload" className="upload-label">
                         {profile.resume?.name ? `File selected: ${profile.resume.name}` : "Click to upload or drag and drop your resume"}
@@ -191,320 +196,122 @@ const ProfilePage = () => {
                     </label>
                 </div>
 
-                {/* Progress Bar */}
                 <ProgressBar percentage={completion} />
 
-                {/* Profile Details Box */}
                 <div className="profile-details-box">
-
-                    <h4>Your Profile Details</h4>
-                    {/* Horizontal Rows for main fields */}
+                    {/* Main Profile Fields */}
                     <div className="form-row">
                         <div className="form-group">
                             <label>Full Name</label>
-                            <input
-                                name="fullName"
-                                value={profile.fullName}
-                                onChange={handleChange}
-                            />
+                            <input name="fullName" value={profile.fullName} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label>Email</label>
-                            <input
-                                name="email"
-                                value={profile.email}
-                                onChange={handleChange}
-                            />
+                            <input name="email" value={profile.email} onChange={handleChange} />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label>Phone</label>
-                            <input
-                                name="phone"
-                                value={profile.phone}
-                                onChange={handleChange}
-                            />
+                            <input name="phone" value={profile.phone} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label>Professional Title</label>
-                            <input
-                                name="title"
-                                value={profile.title}
-                                onChange={handleChange}
-                            />
+                            <input name="title" value={profile.title} onChange={handleChange} />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label>City</label>
-                            <input
-                                name="city"
-                                value={profile.city}
-                                onChange={handleChange}
-                            />
+                            <input name="city" value={profile.city} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label>Country</label>
-                            <input
-                                name="country"
-                                value={profile.country}
-                                onChange={handleChange}
-                            />
+                            <input name="country" value={profile.country} onChange={handleChange} />
                         </div>
                         <div className="form-group">
                             <label>Years of Experience</label>
-                            <input
-                                name="experience"
-                                type="number"
-                                value={profile.experience}
-                                onChange={handleChange}
-                            />
+                            <input type="number" name="experience" value={profile.experience} onChange={handleChange} />
                         </div>
                     </div>
 
-                    {/* Vertical long text fields */}
                     <div className="form-group">
                         <label>Professional Summary</label>
-                        <textarea
-                            name="summary"
-                            rows={3}
-                            value={profile.summary}
-                            onChange={handleChange}
-                        />
+                        <textarea rows={3} name="summary" value={profile.summary} onChange={handleChange} />
                     </div>
 
                     <div className="form-group">
                         <label>Skills (comma separated)</label>
-                        <textarea
-                            name="skills"
-                            rows={2}
-                            value={profile.skills}
-                            onChange={handleChange}
-                        />
+                        <textarea rows={2} name="skills" value={profile.skills} onChange={handleChange} />
                     </div>
 
                     <div className="form-group">
                         <label>Preferred Job Locations (max 3)</label>
-                        <input
-                            type="text"
-                            placeholder="Type location and press Enter"
-                            onKeyDown={handleLocationKeydown}
-                        />
+                        <input type="text" placeholder="Type location and press Enter" onKeyDown={handleLocationKeydown} />
                         <div className="selected-locations">
-                            {(profile.preferredLocations || []).map((loc, idx) => (
+                            {profile.preferredLocations.map((loc, idx) => (
                                 <span key={idx} className="location-tag">
-                                    {loc}
-                                    <button onClick={() => handleRemoveLocation(idx)}>
-                                        x
-                                    </button>
+                                    {loc} <button onClick={() => handleRemoveLocation(idx)}>x</button>
                                 </span>
                             ))}
                         </div>
                     </div>
+
                     <div className="form-group">
                         <label>Hobbies & Interests</label>
-                        <textarea
-                            name="hobbies"
-                            rows={2}
-                            value={profile.hobbies}
-                            onChange={handleChange}
-                        />
+                        <textarea rows={2} name="hobbies" value={profile.hobbies} onChange={handleChange} />
                     </div>
-
 
                     {/* Work History */}
-                    <div className="array-group">
-                        <h5>Work History</h5>
+                    <ArrayField field="workHistory" profile={profile} handleAddItem={handleAddItem} handleRemoveItem={handleRemoveItem} handleArrayChange={handleArrayChange} />
 
-                        {profile.workHistory.map((item, idx) => (
-                            <div className="array-item" key={idx}>
-                                {/* Remove button for each entry */}
-                                <button type="button" className="remove-btn" onClick={() => handleRemoveItem("workHistory", idx)}>
-                                    <FaMinus />
-                                </button>
+                    {/* Education */}
+                    <ArrayField field="education" profile={profile} handleAddItem={handleAddItem} handleRemoveItem={handleRemoveItem} handleArrayChange={handleArrayChange} />
 
-                                {/* Row 1: Job Title | Company */}
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Job Title</label>
-                                        <input
-                                            value={item.jobTitle || ""}
-                                            onChange={(e) => handleArrayChange("workHistory", idx, { ...item, jobTitle: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Company</label>
-                                        <input
-                                            value={item.company || ""}
-                                            onChange={(e) => handleArrayChange("workHistory", idx, { ...item, company: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Row 2: Start Date | End Date */}
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Start Date</label>
-                                        <input
-                                            type="month"
-                                            value={item.startDate || ""}
-                                            onChange={(e) => handleArrayChange("workHistory", idx, { ...item, startDate: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>End Date</label>
-                                        <input
-                                            type="month"
-                                            value={item.endDate || ""}
-                                            onChange={(e) => handleArrayChange("workHistory", idx, { ...item, endDate: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Row 3: Description */}
-                                <div className="form-group">
-                                    <label>Description</label>
-                                    <textarea
-                                        rows={2}
-                                        value={item.description || ""}
-                                        onChange={(e) => handleArrayChange("workHistory", idx, { ...item, description: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Single Add button at bottom */}
-                        <button type="button" className="add-btn" onClick={() => handleAddItem("workHistory")}>
-                            <FaPlus /> Add Work History
-                        </button>
-                    </div>
-
-
-                    {/* Education Section */}
-                    <div className="array-group">
-                        <h5>Education</h5>
-
-                        {profile.education.map((item, idx) => (
-                            <div className="array-item" key={idx}>
-                                {/* Remove button for each entry */}
-                                <button type="button" className="remove-btn" onClick={() => handleRemoveItem("education", idx)}>
-                                    <FaMinus />
-                                </button>
-
-                                {/* Row 1: Institution Name | Degree */}
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Institution Name</label>
-                                        <input
-                                            value={item.institution || ""}
-                                            onChange={(e) => handleArrayChange("education", idx, { ...item, institution: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Degree</label>
-                                        <input
-                                            value={item.degree || ""}
-                                            onChange={(e) => handleArrayChange("education", idx, { ...item, degree: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Row 2: Field of Study | Graduation Year */}
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Field of Study</label>
-                                        <input
-                                            value={item.fieldOfStudy || ""}
-                                            onChange={(e) => handleArrayChange("education", idx, { ...item, fieldOfStudy: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Graduation Year</label>
-                                        <input
-                                            type="number"
-                                            value={item.graduationYear || ""}
-                                            onChange={(e) => handleArrayChange("education", idx, { ...item, graduationYear: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Row 3: CGPA */}
-                                <div className="form-group">
-                                    <label>CGPA</label>
-                                    <input
-                                        value={item.cgpa || ""}
-                                        onChange={(e) => handleArrayChange("education", idx, { ...item, cgpa: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Single Add button at bottom */}
-                        <button type="button" className="add-btn" onClick={() => handleAddItem("education")}>
-                            <FaPlus /> Add Education
-                        </button>
-                    </div>
-                    {/* add Certifications */}
-                    <div className="array-group">
-                        <h5>Certifications</h5>
-
-                        {profile.certifications.map((item, idx) => (
-                            <div className="array-item" key={idx}>
-                                {/* Show remove button for each entry */}
-                                <button type="button" className="remove-btn" onClick={() => handleRemoveItem("certifications", idx)}>
-                                    <FaMinus />
-                                </button>
-
-                                {/* Certification Name | Organization */}
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Certification Name</label>
-                                        <input
-                                            value={item.name || ""}
-                                            onChange={(e) => handleArrayChange("certifications", idx, { ...item, name: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Issuing Organization</label>
-                                        <input
-                                            value={item.organization || ""}
-                                            onChange={(e) => handleArrayChange("certifications", idx, { ...item, organization: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Date Obtained */}
-                                <div className="form-group">
-                                    <label>Date Obtained</label>
-                                    <input
-                                        type="date"
-                                        value={item.dateObtained || ""}
-                                        onChange={(e) => handleArrayChange("certifications", idx, { ...item, dateObtained: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Single Add button at bottom */}
-                        <button type="button" className="add-btn" onClick={() => handleAddItem("certifications")}>
-                            <FaPlus /> Add Certification
-                        </button>
-                    </div>
+                    {/* Certifications */}
+                    <ArrayField field="certifications" profile={profile} handleAddItem={handleAddItem} handleRemoveItem={handleRemoveItem} handleArrayChange={handleArrayChange} />
 
                     <button type="button" onClick={handleSave} disabled={loading} className="btn-save">
                         {loading ? "Saving..." : "Save Profile"}
                     </button>
 
                     {message && <p className="message">{message}</p>}
-
                 </div>
-                {/* Removed: Job Suggestions Section */}
             </div>
         </div>
     );
 };
 
 export default ProfilePage;
+
+// Helper component for arrays (workHistory, education, certifications)
+const ArrayField = ({ field, profile, handleAddItem, handleRemoveItem, handleArrayChange }) => {
+    return (
+        <div className="array-group">
+            <h5>{field.charAt(0).toUpperCase() + field.slice(1)}</h5>
+            {profile[field].map((item, idx) => (
+                <div className="array-item" key={idx}>
+                    <button type="button" className="remove-btn" onClick={() => handleRemoveItem(field, idx)}>
+                        <FaMinus />
+                    </button>
+
+                    {Object.keys(item).map((key) => (
+                        <div className="form-group" key={key}>
+                            <label>{key.charAt(0).toUpperCase() + key.slice(1)}</label>
+                            <input
+                                value={item[key] || ""}
+                                onChange={(e) => handleArrayChange(field, idx, { ...item, [key]: e.target.value })}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ))}
+
+            <button type="button" className="add-btn" onClick={() => handleAddItem(field)}>
+                <FaPlus /> Add {field}
+            </button>
+        </div>
+    );
+};

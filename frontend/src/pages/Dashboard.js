@@ -2,51 +2,73 @@ import React, { useEffect, useRef, useState, useContext } from "react";
 import { Chart } from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import axios from "axios";
-import Sidebar from "../components/Sidebar";
 import { AppContext } from "../context/Appcontext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link, useLocation, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import { Link } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import "./Sidebar.css";
+
+import {
+    FaTachometerAlt,
+    FaUserGraduate,
+    FaCogs,
+    FaSignOutAlt,
+    FaBars,
+    FaUser,
+    FaArrowLeft,
+} from "react-icons/fa";
+
 
 
 export default function Dashboard() {
-    const { backend } = useContext(AppContext);
-    const { login } = useContext(AppContext);
+    const { backend, login, setLogin, setUser } = useContext(AppContext);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+
+    const [collapsed, setCollapsed] = useState(false);
+    const [interviewRounds, setInterviewRounds] = useState([]);
+
     const barChartRef = useRef(null);
     const pieChartRef = useRef(null);
-    const [interviewRounds, setInterviewRounds] = useState([]);
-    const [darkMode, setDarkMode] = useState(() => {
-        // Load saved preference from localStorage
-        return localStorage.getItem("theme") === "dark";
-    });
 
-    // Apply theme to <body>
+    const [darkMode, setDarkMode] = useState(
+        localStorage.getItem("theme") === "dark"
+    );
+
+    /* -------------------- Logout -------------------- */
+    const handleLogout = () => {
+        setLogin(false);
+        setUser(null);
+        navigate("/login");
+    };
+
+    /* -------------------- Theme -------------------- */
     useEffect(() => {
-        if (darkMode) {
-            document.body.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.body.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
+        document.body.classList.toggle("dark", darkMode);
+        localStorage.setItem("theme", darkMode ? "dark" : "light");
     }, [darkMode]);
 
-    async function fetchRounds() {
-        try {
-            const res = await axios.get(`${backend}/user/api/v1/interview-rounds`, { withCredentials: true });
-            setInterviewRounds(res.data.rounds || []);
-        } catch (err) {
-            console.error("Failed to fetch rounds:", err.response?.data || err.message);
-        }
-    }
-
+    /* -------------------- Fetch Rounds -------------------- */
     useEffect(() => {
+        async function fetchRounds() {
+            try {
+                const res = await axios.get(
+                    `${backend}/user/api/v1/interview-rounds`,
+                    { withCredentials: true }
+                );
+                setInterviewRounds(res.data.rounds || []);
+            } catch (err) {
+                console.error(err);
+            }
+        }
         fetchRounds();
-    }, []);
+    }, [backend]);
 
     const totalRounds = interviewRounds.length;
-    const completedRounds = interviewRounds.filter(r => r.status === "Completed").length;
+    const completedRounds = interviewRounds.filter(
+        r => r.status === "Completed"
+    ).length;
+
     const avgScore =
         completedRounds > 0
             ? Math.round(
@@ -55,6 +77,7 @@ export default function Dashboard() {
                     .reduce((sum, r) => sum + r.score, 0) / completedRounds
             )
             : 0;
+
 
     useEffect(() => {
         if (!interviewRounds.length) return;
@@ -134,11 +157,49 @@ export default function Dashboard() {
         });
     }, [interviewRounds]);
 
-    if (!login) return <Navigate to="/login" />;
+    if (!login) {
+        return <Navigate to="/login" />;
+    }
+
 
     return (
         <div className="dashboard">
-            <Sidebar />
+            {/* ================= SIDEBAR ================= */}
+            <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+                <div className="sidebar-header">
+                    <h2 className="sidebar-logo">⚡ Motera AI</h2>
+                    <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)}>
+                        <FaBars />
+                    </button>
+                </div>
+
+                <ul className="sidebar-menu">
+                    <li className={location.pathname === "/dashboard" ? "active" : ""}>
+                        <Link to="/dashboard">
+                            <FaTachometerAlt /> <span>Dashboard</span>
+                        </Link>
+                    </li>
+
+                    <li className={location.pathname === "/profile" ? "active" : ""}>
+                        <Link to="/profile">
+                            <FaUser /> <span>Profile</span>
+                        </Link>
+                    </li>
+
+
+                    <li className={location.pathname === "/settings" ? "active" : ""}>
+                        <Link to="/settings">
+                            <FaCogs /> <span>Settings</span>
+                        </Link>
+                    </li>
+
+                    <li>
+                        <button className="sidebar-logout" onClick={handleLogout}>
+                            <FaSignOutAlt /> <span>Logout</span>
+                        </button>
+                    </li>
+                </ul>
+            </aside>
             <div className="main">
                 <Link to="/" className="back-home">
                     <FaArrowLeft style={{ marginRight: "6px" }} /> Back to Home
